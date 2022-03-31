@@ -1,6 +1,7 @@
 import { DocumentType } from "@typegoose/typegoose";
 import bcrypt from "bcrypt";
 import { Request } from "express";
+import fs from "fs";
 import HttpStatus from "http-status-codes";
 import Jimp from "jimp";
 import _ from "lodash";
@@ -9,7 +10,7 @@ import mongoose from "mongoose";
 import { v4 } from "uuid";
 import Utility, { IServiceResult } from "../../../common/common-methods";
 import { IJWTPayload } from "../../../common/interface/jwtpayload";
-import { default as uploadService } from "../../../common/upload/upload_media.service";
+import uploadService from "../../../common/upload/upload_media.service";
 import employeeModel, {
   Employees
 } from "../../../models/employee-management-models/employee.model";
@@ -966,87 +967,79 @@ class EmployeeService {
         { password: 0 }
       );
       let resultaArray: any = [];
-     // if (found_staff_list && found_staff_list.length > 0)
-     let finalResult: any = [];
-     if (found_staff_list && found_staff_list.length > 0) {
-       //changes manager array string to objectIds array
-       let tempResult: any = [];
-       found_staff_list.forEach((_employee: any) => {
-         let managerArray: any = [];
-         _employee.manager.forEach((obj: any) => {
-           let newObj = new mongoose.Types.ObjectId(obj);
-           managerArray.push(newObj);
-         });
-         _employee.manager = managerArray;
-         tempResult.push(_employee);
+      // if (found_staff_list && found_staff_list.length > 0)
+      let finalResult: any = [];
+      if (found_staff_list && found_staff_list.length > 0) {
+        //changes manager array string to objectIds array
+        let tempResult: any = [];
+        found_staff_list.forEach((_employee: any) => {
+          let managerArray: any = [];
+          _employee.manager.forEach((obj: any) => {
+            let newObj = new mongoose.Types.ObjectId(obj);
+            managerArray.push(newObj);
+          });
+          _employee.manager = managerArray;
+          tempResult.push(_employee);
 
-         //changes role array string to objectIds array
+          //changes role array string to objectIds array
 
-         let rolesArray: any = [];
-         _employee.roles.forEach((obj: any) => {
-           let newObj = new mongoose.Types.ObjectId(obj);
-           rolesArray.push(newObj);
-         });
-         _employee.roles = rolesArray;
-         tempResult.push(_employee);
-       });
+          let rolesArray: any = [];
+          _employee.roles.forEach((obj: any) => {
+            let newObj = new mongoose.Types.ObjectId(obj);
+            rolesArray.push(newObj);
+          });
+          _employee.roles = rolesArray;
+          tempResult.push(_employee);
+        });
 
-       finalResult = await employeeModel
-         .find(
-           { _id: { $in: tempResult } },
-           {
-             _id: 1,
-             fullname: 1,
-             manager: 1,
-             email: 1,
-             roles: 1,
-             organization_id: 1,
-             designation: 1,
-           }
-         )
-         .populate([
-           { path: "manager", select: { fullname: 1, _id: 0 } },
-           { path: "organization_id", select: { name: 1 } },
-           { path: "designation", select: { name: 1 } },
-           { path: "roles", select: { name: 1, _id: 0 } },
-         ]);
-     
-         let role_Array: any = [];
-         let manager_Array: any = [];
-    
-         finalResult.forEach((obj: any) => {
-           //role details
-           role_Array = obj.roles.map((x: any) => {
-             return x.name;
-           });
-    
-           obj.roles = undefined;
-           //manager details
-    
-           manager_Array = obj.manager.map((x: any) => {
-             return x.fullname;
-           });
-           obj.manager = undefined;
-           resultaArray.push({
-             ...obj.toObject(),
-             roles: role_Array,
-             manager: manager_Array,
-           });
-         });
-    
-         return {
+        finalResult = await employeeModel
+          .find(
+            { _id: { $in: tempResult } },
+            {
+              _id: 1,
+              fullname: 1,
+              manager: 1,
+              email: 1,
+              roles: 1,
+              organization_id: 1,
+              designation: 1,
+            }
+          )
+          .populate([
+            { path: "manager", select: { fullname: 1, _id: 0 } },
+            { path: "organization_id", select: { name: 1 } },
+            { path: "designation", select: { name: 1 } },
+            { path: "roles", select: { name: 1, _id: 0 } },
+          ]);
+
+        let role_Array: any = [];
+        let manager_Array: any = [];
+
+        finalResult.forEach((obj: any) => {
+          //role details
+          role_Array = obj.roles.map((x: any) => {
+            return x.name;
+          });
+
+          obj.roles = undefined;
+          //manager details
+
+          manager_Array = obj.manager.map((x: any) => {
+            return x.fullname;
+          });
+          obj.manager = undefined;
+          resultaArray.push({
+            ...obj.toObject(),
+            roles: role_Array,
+            manager: manager_Array,
+          });
+        });
+
+        return {
           status_code: HttpStatus.OK,
           data: resultaArray,
         };
-     
-     
-        }
-    
-     
-
-      
-        
-      else
+      } else
         return {
           data: {
             message: "Staff List Not Found",
@@ -1824,11 +1817,16 @@ class EmployeeService {
         };
 
         let result = await this.createSalarySlipPDf(salarySlipObj);
-
-        return {
-          data: result.data,
-          status_code: HttpStatus.OK,
-        };
+        if (result.data.message)
+          return {
+            data: result.data,
+            status_code: HttpStatus.BAD_REQUEST,
+          };
+        else
+          return {
+            data: result.data,
+            status_code: HttpStatus.OK,
+          };
       }
     } catch (error) {
       console.log(error);
@@ -2188,20 +2186,18 @@ class EmployeeService {
   };
   imageOpacity = async (path: string): Promise<IServiceResult> => {
     let new_path;
-    const image = await Jimp.read(path)
-      .then((result: any) => {
-        return result;
-      })
-      .then((ss: any) => {
-        ss.opacity(0.3).write("D:\\opacity1.png");
-        new_path = "D:\\opacity1.png";
-      });
+    const image = await Jimp.read(path).then((result: any) => {
+      result.opacity(0.3).write("D:\\opacityImage");
+      new_path = "D:\\opacityImage";
+      return new_path;
+    });
 
     return {
       data: new_path,
       status_code: HttpStatus.OK,
     };
   };
+
   MonthlyAllEmployeeSalarySlip = async (
     req: Request,
     model: GenerateAllEmployeeSalarySlipViewmodel
@@ -2284,7 +2280,6 @@ class EmployeeService {
 
       const PDFDocument = require("pdfkit");
 
-      const fs = require("fs");
       var doc = new PDFDocument({
         size: "A4",
         margins: {
@@ -2319,25 +2314,29 @@ class EmployeeService {
       /***************************** */
 
       let name = v4();
-      let tempFilePath="D:\\officeproject\\public\\logo"
+      let tempFilePath = "D:\\officeproject\\public\\logo";
       let imagename = name + ".png";
-      let path = "D:\\officeproject\\public\\logo\\" + imagename;
+      let image_path = "D:\\officeproject\\public\\logo\\" + imagename;
+      console.log(image_path, "pp");
+      //
+
       await uploadService.downloadFile(
         foundEmployee.orgaization_logo,
         tempFilePath,
         imagename
       );
+
       doc
         .image(
-          path,
+          image_path,
           leftStart,
           doc.y,
 
           { fit: [100, 100] }
         )
         .moveDown(1.0);
-        // remove copy of logo from local storage created while getting download path
-        remove(tempFilePath);
+      // // remove copy of logo from local storage created while getting download path
+      //  remove(path);
       let startDocY = doc.y;
 
       let waterMarkEndY = 0;
@@ -2653,13 +2652,13 @@ class EmployeeService {
       waterMarkEndY = totalLength * 14 + doc.y + 14;
       //watermark add
 
-      let img_path = "D:\\logo.png";
-      let imagePath = await this.imageOpacity(img_path);
-      console.log(imagePath.data);
-
-      doc.image(
-        "D:\\logo.png",
-        // imagePath.data,
+      let imagePath = await this.imageOpacity(image_path);
+      console.log(imagePath.data
+        );
+      
+      await doc.image(
+        image_path,
+        //imagePath.data,
         firstDividerPoint,
         (startDocY + waterMarkEndY) / 2,
         {
@@ -2667,6 +2666,8 @@ class EmployeeService {
           height: 52,
         }
       );
+      // remove copy of logo from local storage created while getting download path
+      remove(image_path);
       for (let i = 0; i < totalLength; i++) {
         doc
           .rect(leftStart, doc.y + 14, rightEnd - 10, 0)

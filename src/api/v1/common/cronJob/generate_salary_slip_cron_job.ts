@@ -1,4 +1,5 @@
 import { DocumentType } from "@typegoose/typegoose";
+import fs from "fs";
 import HttpStatus from "http-status-codes";
 import Jimp from "jimp";
 import moment from "moment";
@@ -502,7 +503,7 @@ async function salarySlipPDf(obj: any) {
 
     const PDFDocument = require("pdfkit");
 
-    const fs = require("fs");
+   
     var doc = new PDFDocument({
       size: "A4",
       margins: {
@@ -526,7 +527,10 @@ async function salarySlipPDf(obj: any) {
     let leftStart = (doc.page.margins.left ?? doc.page.margins) + 1;
     let rightEnd =
       doc.page.width - (doc.page.margins.right ?? doc.page.margins);
+//
 
+
+//
     let name = v4();
     let tempFilePath="D:\\officeproject\\public\\logo"
     let imagename = name + ".png";
@@ -536,7 +540,7 @@ async function salarySlipPDf(obj: any) {
       tempFilePath,
       imagename
     );
-    remove(tempFilePath);
+    //remove(tempFilePath);
 
     doc
       .image(

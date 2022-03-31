@@ -1,4 +1,5 @@
 const cloudinary = require("cloudinary").v2;
+const request = require('request');
 import { DocumentType } from "@typegoose/typegoose";
 import download from "download";
 import { Request } from "express";
@@ -9,7 +10,6 @@ import { Employees } from "../../models/employee-management-models/employee.mode
 import { IServiceResult } from "../common-methods";
 import { DeleteResourcesViewModel } from "./upload_viewmodel";
 const remove = require("fs-extra").remove;
-const streamifier = require("streamifier");
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
   api_key: process.env.CLOUD_API_KEY,
@@ -46,17 +46,17 @@ class UploadService {
     req: Request
   ): Promise<IServiceResult> => {
     try {
-      if (req.query.folder != "attachments" && req.query.folder != "images")
-        {
-          let msg="Folder Name Must Be From One Of Them Either 'attachments'or 'images'"
-          return {
+      if (req.query.folder != "attachments" && req.query.folder != "images") {
+        let msg =
+          "Folder Name Must Be From One Of Them Either 'attachments'or 'images'";
+        return {
           status_code: HttpStatus.BAD_REQUEST,
           data: {
-            message:msg.replace(/\\/g, '')
-               ,
+            message: msg.replace(/\\/g, ""),
             Error: "On Upload Error",
           },
-        };}
+        };
+      }
 
       let pictureFiles: any = req.files!.document as UploadedFile;
       //Check if files exist
@@ -183,6 +183,7 @@ class UploadService {
         },
       };
   };
+
 }
 
 export default new UploadService();
