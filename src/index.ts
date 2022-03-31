@@ -9,6 +9,7 @@ import environment_variables from "./api/v1/common/config/enviorment_config";
 import { strategy } from "./api/v1/common/config/passport.config";
 import { generate_salary_slip_cron_job } from "./api/v1/common/cronJob/generate_salary_slip_cron_job";
 import Routes from "./api/v1/routes";
+var engine = require('ejs-locals')
 dotenv.config();
 
 const app = express();
@@ -16,6 +17,8 @@ app.use(fileUpload({ useTempFiles: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // app.use(express.static('public'))
+// use ejs-locals for all ejs templates:
+app.engine('ejs', engine);
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 const database = process.env.DB_URL || "";
