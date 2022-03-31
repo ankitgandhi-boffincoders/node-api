@@ -15,7 +15,7 @@ const app = express();
 app.use(fileUpload({ useTempFiles: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static('public'))
+// app.use(express.static('public'))
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 const database = process.env.DB_URL || "";
