@@ -5,20 +5,15 @@ import fileUpload from "express-fileupload";
 import mongoose from "mongoose";
 import passport from "passport";
 import path from "path";
-import environment_variables from "./api/v1/common/config/enviorment_config";
 import { strategy } from "./api/v1/common/config/passport.config";
 import { generate_salary_slip_cron_job } from "./api/v1/common/cronJob/generate_salary_slip_cron_job";
 import Routes from "./api/v1/routes";
-//var engine = require('ejs-locals')
 dotenv.config();
-
 const app = express();
 app.use(fileUpload({ useTempFiles: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-// app.use(express.static('public'))
-// use ejs-locals for all ejs templates:
-//app.engine('ejs', engine);
+app.use(express.static('public'))
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 const database = process.env.DB_URL || "";
@@ -35,5 +30,5 @@ app.use(cors());
 
 generate_salary_slip_cron_job.start();
 app.use("/", Routes);
-const PORT = process.env.PORT || environment_variables.PORT;
+const PORT = process.env.PORT || 6000;
 app.listen(PORT, () => console.log(`server running on port:- ${PORT}`));

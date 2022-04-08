@@ -18,6 +18,11 @@ export interface IServiceResult {
   status_code: number;
   data: any;
 }
+export interface IServiceResult1 {
+  status_code: number;
+  success: boolean,
+  data: any;
+}
 
 export class Utility {
   errors = [];

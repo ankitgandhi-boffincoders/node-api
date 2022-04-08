@@ -55,18 +55,13 @@ class Leave_Controller {
         let model: AddLeaveViewmodel =
           conversionResult.data as AddLeaveViewmodel;
         let leaveResult = await leaveService.AddLeave(req, model);
-        if (leaveResult && leaveResult.status_code === HttpStatus.OK)
+       
           return res.status(leaveResult.status_code).json({
             status_code: leaveResult.status_code,
-            success: true,
+            success: leaveResult.success,
             data: leaveResult.data,
           });
-        else
-          return res.status(leaveResult.status_code).json({
-            status_code: leaveResult.status_code,
-            success: false,
-            errors: [leaveResult.data],
-          });
+        
       }
     } catch (error) {
       next(error);
@@ -93,18 +88,13 @@ class Leave_Controller {
         let model: UpdateLeaveViewmodel =
           conversionResult.data as UpdateLeaveViewmodel;
         let leaveResult = await leaveService.UpdateLeave(req, model);
-        if (leaveResult && leaveResult.status_code === HttpStatus.OK)
+        
           return res.status(leaveResult.status_code).json({
             status_code: leaveResult.status_code,
-            success: true,
+            success: leaveResult.success,
             data: leaveResult.data,
           });
-        else
-          return res.status(leaveResult.status_code).json({
-            status_code: leaveResult.status_code,
-            success: false,
-            errors: [leaveResult.data],
-          });
+       
       }
     } catch (error) {
       next(error);
@@ -129,18 +119,13 @@ class Leave_Controller {
         });
       } else {
         let leaveResult = await leaveService.DeleteLeave(req);
-        if (leaveResult && leaveResult.status_code === HttpStatus.OK)
+       
           return res.status(leaveResult.status_code).json({
             status_code: leaveResult.status_code,
-            success: true,
+            success: leaveResult.success,
             data: leaveResult.data,
           });
-        else
-          return res.status(leaveResult.status_code).json({
-            status_code: leaveResult.status_code,
-            success: false,
-            errors: [leaveResult.data],
-          });
+       
       }
     } catch (error) {
       next(error);
@@ -166,18 +151,13 @@ class Leave_Controller {
         });
       } else {
         let leaveResult = await leaveService.GetLeaveDetails(req);
-        if (leaveResult && leaveResult.status_code === HttpStatus.OK)
+       
           return res.status(leaveResult.status_code).json({
             status_code: leaveResult.status_code,
-            success: true,
+            success: leaveResult.success,
             data: leaveResult.data,
           });
-        else
-          return res.status(leaveResult.status_code).json({
-            status_code: leaveResult.status_code,
-            success: false,
-            errors: [leaveResult.data],
-          });
+     
       }
     } catch (error) {
       next(error);
@@ -209,21 +189,13 @@ class Leave_Controller {
           req,
           model
         );
-        if (
-          leaveApprovalResult &&
-          leaveApprovalResult.status_code === HttpStatus.OK
-        )
+        
           return res.status(leaveApprovalResult.status_code).json({
             status_code: leaveApprovalResult.status_code,
-            success: true,
+            success: leaveApprovalResult.success,
             data: leaveApprovalResult.data,
           });
-        else
-          return res.status(leaveApprovalResult.status_code).json({
-            status_code: leaveApprovalResult.status_code,
-            success: false,
-            errors: [leaveApprovalResult.data],
-          });
+        
       }
     } catch (error) {
       next(error);
@@ -248,21 +220,11 @@ class Leave_Controller {
         });
       } else {
         let leaveHistoryResult = await leaveService.LeaveHistory(req);
-        if (
-          leaveHistoryResult &&
-          leaveHistoryResult.status_code === HttpStatus.OK
-        )
-          return res.status(leaveHistoryResult.status_code).json({
-            status_code: leaveHistoryResult.status_code,
-            success: true,
-            data: leaveHistoryResult.data,
-          });
-        else
-          return res.status(leaveHistoryResult.status_code).json({
-            status_code: leaveHistoryResult.status_code,
-            success: false,
-            errors: [leaveHistoryResult.data],
-          });
+        return res.status(leaveHistoryResult.status_code).json({
+          status_code: leaveHistoryResult.status_code,
+          success: leaveHistoryResult.success,
+          data: leaveHistoryResult.data,
+        });
       }
     } catch (error) {
       next(error);
@@ -290,21 +252,13 @@ class Leave_Controller {
         let leaveHistoryResult = await leaveService.LeaveHistoryAllEmployee(
           req
         );
-        if (
-          leaveHistoryResult &&
-          leaveHistoryResult.status_code === HttpStatus.OK
-        )
+      
           return res.status(leaveHistoryResult.status_code).json({
             status_code: leaveHistoryResult.status_code,
-            success: true,
+            success: leaveHistoryResult.success,
             data: leaveHistoryResult.data,
           });
-        else
-          return res.status(leaveHistoryResult.status_code).json({
-            status_code: leaveHistoryResult.status_code,
-            success: false,
-            errors: [leaveHistoryResult.data],
-          });
+       
       }
     } catch (error) {
       next(error);
@@ -336,21 +290,13 @@ class Leave_Controller {
           req,
           model
         );
-        if (
-          leaveUpdateResult &&
-          leaveUpdateResult.status_code === HttpStatus.OK
-        )
+       
           return res.status(leaveUpdateResult.status_code).json({
             status_code: leaveUpdateResult.status_code,
-            success: true,
+            success: leaveUpdateResult.success,
             data: leaveUpdateResult.data,
           });
-        else
-          return res.status(leaveUpdateResult.status_code).json({
-            status_code: leaveUpdateResult.status_code,
-            success: false,
-            errors: [leaveUpdateResult.data],
-          });
+        
       }
     } catch (error) {
       next(error);
@@ -364,18 +310,13 @@ class Leave_Controller {
   ) => {
     try {
       let leaveResult = await leaveService.LeaveList(req);
-      if (leaveResult && leaveResult.status_code === HttpStatus.OK)
+      
         return res.status(leaveResult.status_code).json({
           status_code: leaveResult.status_code,
-          success: true,
+          success: leaveResult.success,
           data: leaveResult.data,
         });
-      else
-        return res.status(leaveResult.status_code).json({
-          status_code: leaveResult.status_code,
-          success: false,
-          errors: [leaveResult.data],
-        });
+     
     } catch (error) {
       next(error);
     }
@@ -400,18 +341,13 @@ class Leave_Controller {
         });
       } else {
         let leaveResult = await leaveService.LeaveListByAdmin(req);
-        if (leaveResult && leaveResult.status_code === HttpStatus.OK)
+      
           return res.status(leaveResult.status_code).json({
             status_code: leaveResult.status_code,
-            success: true,
+            success: leaveResult.success,
             data: leaveResult.data,
           });
-        else
-          return res.status(leaveResult.status_code).json({
-            status_code: leaveResult.status_code,
-            success: false,
-            errors: [leaveResult.data],
-          });
+        
       }
     } catch (error) {
       next(error);
@@ -438,18 +374,13 @@ class Leave_Controller {
         let model: AddLeaveTypeViewmodel =
           conversionResult.data as AddLeaveTypeViewmodel;
         let leaveTypeResult = await leaveService.AddLeaveType(req, model);
-        if (leaveTypeResult && leaveTypeResult.status_code === HttpStatus.OK)
+        
           return res.status(leaveTypeResult.status_code).json({
             status_code: leaveTypeResult.status_code,
-            success: true,
+            success: leaveTypeResult.success,
             data: leaveTypeResult.data,
           });
-        else
-          return res.status(leaveTypeResult.status_code).json({
-            status_code: leaveTypeResult.status_code,
-            success: false,
-            errors: [leaveTypeResult.data],
-          });
+       
       }
     } catch (error) {
       next(error);
@@ -474,18 +405,13 @@ class Leave_Controller {
         });
       } else {
         let leaveTypeResult = await leaveService.DeleteLeaveType(req);
-        if (leaveTypeResult && leaveTypeResult.status_code === HttpStatus.OK)
+        
           return res.status(leaveTypeResult.status_code).json({
             status_code: leaveTypeResult.status_code,
-            success: true,
+            success: leaveTypeResult.success,
             data: leaveTypeResult.data,
           });
-        else
-          return res.status(leaveTypeResult.status_code).json({
-            status_code: leaveTypeResult.status_code,
-            success: false,
-            errors: [leaveTypeResult.data],
-          });
+       
       }
     } catch (error) {
       next(error);
@@ -511,18 +437,13 @@ class Leave_Controller {
         });
       } else {
         let leaveTypeResult = await leaveService.getLeaveTypeDetails(req);
-        if (leaveTypeResult && leaveTypeResult.status_code === HttpStatus.OK)
+       
           return res.status(leaveTypeResult.status_code).json({
             status_code: leaveTypeResult.status_code,
-            success: true,
+            success: leaveTypeResult.success,
             data: leaveTypeResult.data,
           });
-        else
-          return res.status(leaveTypeResult.status_code).json({
-            status_code: leaveTypeResult.status_code,
-            success: false,
-            errors: [leaveTypeResult.data],
-          });
+        
       }
     } catch (error) {
       next(error);
@@ -549,18 +470,13 @@ class Leave_Controller {
         let model: UpdateLeaveTypeViewmodel =
           conversionResult.data as UpdateLeaveTypeViewmodel;
         let leaveTypeResult = await leaveService.UpdateLeaveType(req, model);
-        if (leaveTypeResult && leaveTypeResult.status_code === HttpStatus.OK)
+      
           return res.status(leaveTypeResult.status_code).json({
             status_code: leaveTypeResult.status_code,
-            success: true,
+            success: leaveTypeResult.success,
             data: leaveTypeResult.data,
           });
-        else
-          return res.status(leaveTypeResult.status_code).json({
-            status_code: leaveTypeResult.status_code,
-            success: false,
-            errors: [leaveTypeResult.data],
-          });
+        
       }
     } catch (error) {
       next(error);
@@ -574,21 +490,13 @@ class Leave_Controller {
   ) => {
     try {
       let leaveTypeListResult = await leaveService.AllLeaveTypeList(req);
-      if (
-        leaveTypeListResult &&
-        leaveTypeListResult.status_code === HttpStatus.OK
-      )
+      
         return res.status(leaveTypeListResult.status_code).json({
           status_code: leaveTypeListResult.status_code,
-          success: true,
+          success: leaveTypeListResult.success,
           data: leaveTypeListResult.data,
         });
-      else
-        return res.status(leaveTypeListResult.status_code).json({
-          status_code: leaveTypeListResult.status_code,
-          success: false,
-          errors: [leaveTypeListResult.data],
-        });
+      
     } catch (error) {
       next(error);
     }
@@ -615,21 +523,13 @@ class Leave_Controller {
         let model: AddLeaveStatusViewmodel =
           conversionResult.data as AddLeaveStatusViewmodel;
         let leaveStatusResult = await leaveService.AddLeaveStatus(req, model);
-        if (
-          leaveStatusResult &&
-          leaveStatusResult.status_code === HttpStatus.OK
-        )
+       
           return res.status(leaveStatusResult.status_code).json({
             status_code: leaveStatusResult.status_code,
-            success: true,
+            success: leaveStatusResult.success,
             data: leaveStatusResult.data,
           });
-        else
-          return res.status(leaveStatusResult.status_code).json({
-            status_code: leaveStatusResult.status_code,
-            success: false,
-            errors: [leaveStatusResult.data],
-          });
+        
       }
     } catch (error) {
       next(error);
@@ -654,21 +554,13 @@ class Leave_Controller {
         });
       } else {
         let leaveStatusResult = await leaveService.DeleteLeaveStatus(req);
-        if (
-          leaveStatusResult &&
-          leaveStatusResult.status_code === HttpStatus.OK
-        )
+      
           return res.status(leaveStatusResult.status_code).json({
             status_code: leaveStatusResult.status_code,
-            success: true,
+            success: leaveStatusResult.success,
             data: leaveStatusResult.data,
           });
-        else
-          return res.status(leaveStatusResult.status_code).json({
-            status_code: leaveStatusResult.status_code,
-            success: false,
-            errors: [leaveStatusResult.data],
-          });
+       
       }
     } catch (error) {
       next(error);
@@ -694,21 +586,13 @@ class Leave_Controller {
         });
       } else {
         let leaveStatusResult = await leaveService.GetLeaveStatus(req);
-        if (
-          leaveStatusResult &&
-          leaveStatusResult.status_code === HttpStatus.OK
-        )
+      
           return res.status(leaveStatusResult.status_code).json({
             status_code: leaveStatusResult.status_code,
-            success: true,
+            success: leaveStatusResult.success,
             data: leaveStatusResult.data,
           });
-        else
-          return res.status(leaveStatusResult.status_code).json({
-            status_code: leaveStatusResult.status_code,
-            success: false,
-            errors: [leaveStatusResult.data],
-          });
+        
       }
     } catch (error) {
       next(error);
@@ -738,21 +622,13 @@ class Leave_Controller {
           req,
           model
         );
-        if (
-          leaveStatusResult &&
-          leaveStatusResult.status_code === HttpStatus.OK
-        )
+      
           return res.status(leaveStatusResult.status_code).json({
             status_code: leaveStatusResult.status_code,
-            success: true,
+            success: leaveStatusResult.success,
             data: leaveStatusResult.data,
           });
-        else
-          return res.status(leaveStatusResult.status_code).json({
-            status_code: leaveStatusResult.status_code,
-            success: false,
-            errors: [leaveStatusResult.data],
-          });
+       
       }
     } catch (error) {
       next(error);
@@ -766,21 +642,13 @@ class Leave_Controller {
   ) => {
     try {
       let leaveStatusListResult = await leaveService.AllLeaveStatusList(req);
-      if (
-        leaveStatusListResult &&
-        leaveStatusListResult.status_code === HttpStatus.OK
-      )
+      
         return res.status(leaveStatusListResult.status_code).json({
           status_code: leaveStatusListResult.status_code,
-          success: true,
+          success: leaveStatusListResult.success,
           data: leaveStatusListResult.data,
         });
-      else
-        return res.status(leaveStatusListResult.status_code).json({
-          status_code: leaveStatusListResult.status_code,
-          success: false,
-          errors: [leaveStatusListResult.data],
-        });
+      
     } catch (error) {
       next(error);
     }
@@ -807,21 +675,13 @@ class Leave_Controller {
         let model: AddLeaveReasonViewmodel =
           conversionResult.data as AddLeaveReasonViewmodel;
         let leaveReasonResult = await leaveService.AddLeaveReason(req, model);
-        if (
-          leaveReasonResult &&
-          leaveReasonResult.status_code === HttpStatus.OK
-        )
+        
           return res.status(leaveReasonResult.status_code).json({
             status_code: leaveReasonResult.status_code,
-            success: true,
+            success: leaveReasonResult.success,
             data: leaveReasonResult.data,
           });
-        else
-          return res.status(leaveReasonResult.status_code).json({
-            status_code: leaveReasonResult.status_code,
-            success: false,
-            errors: [leaveReasonResult.data],
-          });
+        
       }
     } catch (error) {
       next(error);
@@ -846,21 +706,13 @@ class Leave_Controller {
         });
       } else {
         let leaveReasonResult = await leaveService.DeleteLeaveReason(req);
-        if (
-          leaveReasonResult &&
-          leaveReasonResult.status_code === HttpStatus.OK
-        )
+        
           return res.status(leaveReasonResult.status_code).json({
             status_code: leaveReasonResult.status_code,
             success: true,
             data: leaveReasonResult.data,
           });
-        else
-          return res.status(leaveReasonResult.status_code).json({
-            status_code: leaveReasonResult.status_code,
-            success: false,
-            errors: [leaveReasonResult.data],
-          });
+        
       }
     } catch (error) {
       next(error);
@@ -890,21 +742,13 @@ class Leave_Controller {
           req,
           model
         );
-        if (
-          leaveReasonResult &&
-          leaveReasonResult.status_code === HttpStatus.OK
-        )
+        
           return res.status(leaveReasonResult.status_code).json({
             status_code: leaveReasonResult.status_code,
-            success: true,
+            success: leaveReasonResult.success,
             data: leaveReasonResult.data,
           });
-        else
-          return res.status(leaveReasonResult.status_code).json({
-            status_code: leaveReasonResult.status_code,
-            success: false,
-            errors: [leaveReasonResult.data],
-          });
+        
       }
     } catch (error) {
       next(error);
@@ -918,21 +762,13 @@ class Leave_Controller {
   ) => {
     try {
       let leaveReasonListResult = await leaveService.AllLeaveReasonList(req);
-      if (
-        leaveReasonListResult &&
-        leaveReasonListResult.status_code === HttpStatus.OK
-      )
+      
         return res.status(leaveReasonListResult.status_code).json({
           status_code: leaveReasonListResult.status_code,
-          success: true,
+          success: leaveReasonListResult.success,
           data: leaveReasonListResult.data,
         });
-      else
-        return res.status(leaveReasonListResult.status_code).json({
-          status_code: leaveReasonListResult.status_code,
-          success: false,
-          errors: [leaveReasonListResult.data],
-        });
+      
     } catch (error) {
       next(error);
     }
@@ -962,21 +798,13 @@ class Leave_Controller {
           req,
           model
         );
-        if (
-          leaveDeductionResult &&
-          leaveDeductionResult.status_code === HttpStatus.OK
-        )
+        
           return res.status(leaveDeductionResult.status_code).json({
             status_code: leaveDeductionResult.status_code,
-            success: true,
+            success: leaveDeductionResult.success,
             data: leaveDeductionResult.data,
           });
-        else
-          return res.status(leaveDeductionResult.status_code).json({
-            status_code: leaveDeductionResult.status_code,
-            success: false,
-            errors: [leaveDeductionResult.data],
-          });
+        
       }
     } catch (error) {
       next(error);
@@ -1002,21 +830,13 @@ class Leave_Controller {
       } else {
         let leaveDeductionResult =
           await leaveService.DeleteLeaveDeductionCategory(req);
-        if (
-          leaveDeductionResult &&
-          leaveDeductionResult.status_code === HttpStatus.OK
-        )
+       
           return res.status(leaveDeductionResult.status_code).json({
             status_code: leaveDeductionResult.status_code,
-            success: true,
+            success: leaveDeductionResult.success,
             data: leaveDeductionResult.data,
           });
-        else
-          return res.status(leaveDeductionResult.status_code).json({
-            status_code: leaveDeductionResult.status_code,
-            success: false,
-            errors: [leaveDeductionResult.data],
-          });
+        
       }
     } catch (error) {
       next(error);
@@ -1043,21 +863,13 @@ class Leave_Controller {
           conversionResult.data as UpdateLeaveDeductionCategoryViewmodel;
         let leaveDeductionResult =
           await leaveService.UpdateLeaveDeductionCategory(req, model);
-        if (
-          leaveDeductionResult &&
-          leaveDeductionResult.status_code === HttpStatus.OK
-        )
+        
           return res.status(leaveDeductionResult.status_code).json({
             status_code: leaveDeductionResult.status_code,
-            success: true,
+            success: leaveDeductionResult.success,
             data: leaveDeductionResult.data,
           });
-        else
-          return res.status(leaveDeductionResult.status_code).json({
-            status_code: leaveDeductionResult.status_code,
-            success: false,
-            errors: [leaveDeductionResult.data],
-          });
+        
       }
     } catch (error) {
       next(error);
@@ -1072,21 +884,13 @@ class Leave_Controller {
     try {
       let leaveDeductionCategoryListResult =
         await leaveService.AllLeaveDeductionCategoryList(req);
-      if (
-        leaveDeductionCategoryListResult &&
-        leaveDeductionCategoryListResult.status_code === HttpStatus.OK
-      )
+    
         return res.status(leaveDeductionCategoryListResult.status_code).json({
           status_code: leaveDeductionCategoryListResult.status_code,
-          success: true,
+          success: leaveDeductionCategoryListResult.success,
           data: leaveDeductionCategoryListResult.data,
         });
-      else
-        return res.status(leaveDeductionCategoryListResult.status_code).json({
-          status_code: leaveDeductionCategoryListResult.status_code,
-          success: false,
-          errors: [leaveDeductionCategoryListResult.data],
-        });
+      
     } catch (error) {
       next(error);
     }
@@ -1110,21 +914,13 @@ class Leave_Controller {
       } else {
         let leaveDeductionCategoryResult =
           await leaveService.GetLeaveDeductionCategoryDetails(req);
-        if (
-          leaveDeductionCategoryResult &&
-          leaveDeductionCategoryResult.status_code === HttpStatus.OK
-        )
+       
           return res.status(leaveDeductionCategoryResult.status_code).json({
             status_code: leaveDeductionCategoryResult.status_code,
-            success: true,
+            success: leaveDeductionCategoryResult.success,
             data: leaveDeductionCategoryResult.data,
           });
-        else
-          return res.status(leaveDeductionCategoryResult.status_code).json({
-            status_code: leaveDeductionCategoryResult.status_code,
-            success: false,
-            errors: [leaveDeductionCategoryResult.data],
-          });
+        
       }
     } catch (error) {
       next(error);

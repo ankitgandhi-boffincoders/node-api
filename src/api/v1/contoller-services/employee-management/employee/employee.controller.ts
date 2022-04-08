@@ -48,18 +48,13 @@ class Employee_Controller {
           conversionResult.data as AddEmployeeAccountViewmodel;
 
         let employeeResult = await employeeService.addEmployee(req, model);
-        if (employeeResult && employeeResult.status_code === HttpStatus.OK)
+        
           return res.status(employeeResult.status_code).json({
             status_code: employeeResult.status_code,
-            success: true,
+            success: employeeResult.success,
             data: employeeResult.data,
           });
-        else
-          return res.status(employeeResult.status_code).json({
-            status_code: employeeResult.status_code,
-            success: false,
-            errors: [employeeResult.data],
-          });
+        
       }
     } catch (error) {
       next(error);
@@ -88,18 +83,13 @@ class Employee_Controller {
           conversionResult.data as UpdateEmployeeAccountViewmodel;
 
         let employeeResult = await employeeService.updateEmployee(req, model);
-        if (employeeResult && employeeResult.status_code === HttpStatus.OK)
+      
           return res.status(employeeResult.status_code).json({
             status_code: employeeResult.status_code,
-            success: true,
+            success: employeeResult.success,
             data: employeeResult.data,
           });
-        else
-          return res.status(employeeResult.status_code).json({
-            status_code: employeeResult.status_code,
-            success: false,
-            errors: [employeeResult.data],
-          });
+        
       }
     } catch (error) {
       next(error);
@@ -125,18 +115,13 @@ class Employee_Controller {
         });
       } else {
         let employeeResult = await employeeService.getEmployeeDetails(req);
-        if (employeeResult && employeeResult.status_code === HttpStatus.OK)
+       
           return res.status(employeeResult.status_code).json({
             status_code: employeeResult.status_code,
-            success: true,
+            success: employeeResult.success,
             data: employeeResult.data,
           });
-        else
-          return res.status(employeeResult.status_code).json({
-            status_code: employeeResult.status_code,
-            success: false,
-            errors: [employeeResult.data],
-          });
+        
       }
     } catch (error) {
       next(error);
@@ -402,18 +387,18 @@ class Employee_Controller {
         });
       } else {
         let listResult = await employeeService.allEmployeeDetails(req);
-        if (listResult && listResult.status_code === HttpStatus.OK)
+        //if (listResult && listResult.status_code === HttpStatus.OK)
           return res.status(listResult.status_code).json({
             status_code: listResult.status_code,
-            success: true,
+            success: listResult.success,
             data: listResult.data,
           });
-        else
-          return res.status(listResult.status_code).json({
-            status_code: listResult.status_code,
-            success: false,
-            errors: [listResult.data],
-          });
+        // else
+        //   return res.status(listResult.status_code).json({
+        //     status_code: listResult.status_code,
+        //     success: false,
+        //     errors: [listResult.data],
+        //   });
       }
     } catch (error) {
       next(error);
@@ -642,6 +627,8 @@ class Employee_Controller {
           salaryHistoryResult &&
           salaryHistoryResult.status_code === HttpStatus.OK
         )
+
+        
           return res.status(salaryHistoryResult.status_code).json({
             status_code: salaryHistoryResult.status_code,
             success: true,

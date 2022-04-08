@@ -14,7 +14,7 @@ class CertificateController {
         CertificateViewModel,
         req.body
       );
-      
+
       if (conversionResult.error && conversionResult.error.length > 0) {
         return res.status(HttpStatus.BAD_REQUEST).send({
           status_code: HttpStatus.BAD_REQUEST,
@@ -22,16 +22,12 @@ class CertificateController {
           errors: conversionResult.error,
         });
       } else {
-        console.log(req);
-        
         let model: CertificateViewModel =
           conversionResult.data as CertificateViewModel;
-          
-        let response = await CertificateService.certificate(req,res,model);
-        console.log(response);
-        
+
+        let response = await CertificateService.certificate(req, res, model);
+
         if (response && response.status_code === HttpStatus.OK)
-        
           return res.status(HttpStatus.OK).send({
             status_code: HttpStatus.OK,
             success: true,
@@ -50,8 +46,5 @@ class CertificateController {
       next(error);
     }
   };
-  
-
-  
 }
 export default new CertificateController();

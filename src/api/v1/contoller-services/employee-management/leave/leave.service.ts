@@ -4,7 +4,7 @@ import HttpStatus from "http-status-codes";
 import _ from "lodash";
 import moment from "moment";
 import mongoose from "mongoose";
-import { IServiceResult } from "../../../common/common-methods";
+import { IServiceResult1 } from "../../../common/common-methods";
 import {
   default as Employee,
   default as employeesModel,
@@ -57,7 +57,7 @@ class LeaveService {
   AddLeave = async (
     req: Request,
     model: AddLeaveViewmodel
-  ): Promise<IServiceResult> => {
+  ): Promise<IServiceResult1> => {
     try {
       let UserDetails = <DocumentType<Employees>>req.user;
       // const findEmployee = await employeesModel.findById(model.employee_id);
@@ -66,9 +66,9 @@ class LeaveService {
         return {
           data: {
             message: "Employee Not Found",
-            error: "On Add Error",
           },
-          status_code: HttpStatus.BAD_REQUEST,
+          success: false,
+          status_code: HttpStatus.OK,
         };
       else {
         let found_manager = await employeesModel.find({
@@ -80,7 +80,14 @@ class LeaveService {
         });
 
         let superAdminAndMasterAdminRole = await roles.find(
-          { name: { $in: [EnumRoles.MASTERADMIN.valueOf(), EnumRoles.SUPERADMIN.valueOf()] } },
+          {
+            name: {
+              $in: [
+                EnumRoles.MASTERADMIN.valueOf(),
+                EnumRoles.SUPERADMIN.valueOf(),
+              ],
+            },
+          },
           { _id: 1, name: 0 }
         );
         let superAdminAndMasterAdminRoleIds: string[] =
@@ -105,9 +112,9 @@ class LeaveService {
           return {
             data: {
               message: "manager Not Found",
-              error: "On Add Error",
             },
-            status_code: HttpStatus.BAD_REQUEST,
+            success: false,
+            status_code: HttpStatus.OK,
           };
         else {
           let ModelToSave = <Leave>model;
@@ -119,16 +126,16 @@ class LeaveService {
             return {
               data: {
                 message: "From_date Can't Be A Past Date",
-                error: "On Add Error",
               },
-              status_code: HttpStatus.BAD_REQUEST,
+              success: false,
+              status_code: HttpStatus.OK,
             };
           if (endDate.isBefore(today))
             return {
               data: {
                 message: "To_date Can't Be A Past Date",
-                error: "On Add Error",
               },
+              success: false,
               status_code: HttpStatus.BAD_REQUEST,
             };
 
@@ -136,8 +143,8 @@ class LeaveService {
             return {
               data: {
                 message: "To_date Can't Be Less Than From date",
-                error: "On Add Error",
               },
+              success: false,
               status_code: HttpStatus.BAD_REQUEST,
             };
           ModelToSave.approval_remarks = "";
@@ -176,19 +183,21 @@ class LeaveService {
           if (createLeaveRequest)
             return {
               status_code: HttpStatus.OK,
-
-              data: {
-                message: "leave request sent",
-                leave_details: createLeaveRequest,
-              },
+              success: true,
+              data: createLeaveRequest,
+              // {
+              //   // message: "leave request sent",
+              //   leave_details: createLeaveRequest,
+              // },
             };
           else
             return {
-              status_code: HttpStatus.BAD_REQUEST,
-              data: {
-                message: "leave request not sent",
-                Error: "On Add Error",
-              },
+              status_code: HttpStatus.OK,
+              success: false,
+              data: {},
+              // {
+              //   message: "leave request not sent",
+              // },
             };
         }
       }
@@ -197,9 +206,9 @@ class LeaveService {
 
       return {
         status_code: HttpStatus.INTERNAL_SERVER_ERROR,
+        success: false,
         data: {
           message: "Internal Server Error",
-          Error: "On Add Error",
         },
       };
     }
@@ -207,7 +216,7 @@ class LeaveService {
   UpdateLeave = async (
     req: Request,
     model: UpdateLeaveViewmodel
-  ): Promise<IServiceResult> => {
+  ): Promise<IServiceResult1> => {
     try {
       const findLeave = await leaveModel
         .findById(model._id)
@@ -219,8 +228,8 @@ class LeaveService {
           return {
             data: {
               message: "You Are Not Authorized To Update This Leave",
-              error: "On Update Error",
             },
+            success: false,
             status_code: HttpStatus.UNAUTHORIZED,
           };
         else {
@@ -234,7 +243,8 @@ class LeaveService {
                 message:
                   "This Leave Can't Be Updated Due To Changes Done By Admin Team",
               },
-              status_code: HttpStatus.BAD_REQUEST,
+              success: false,
+              status_code: HttpStatus.OK,
             };
           else {
             let ModelToSave = <Leave>model;
@@ -245,8 +255,9 @@ class LeaveService {
                 return {
                   data: {
                     message: "From_date Can't Be A Past Date",
-                    error: "On Update Error",
+                    success: false,
                   },
+                  success: false,
                   status_code: HttpStatus.BAD_REQUEST,
                 };
               ModelToSave.from_date = new Date(model.from_date);
@@ -258,8 +269,8 @@ class LeaveService {
                 return {
                   data: {
                     message: "To_date Can't Be A Past Date",
-                    error: "On Update Error",
                   },
+                  success: false,
                   status_code: HttpStatus.BAD_REQUEST,
                 };
 
@@ -267,8 +278,8 @@ class LeaveService {
                 return {
                   data: {
                     message: "To_date Can't Be Less Than From date",
-                    error: "On Update Error",
                   },
+                  success: false,
                   status_code: HttpStatus.BAD_REQUEST,
                 };
 
@@ -293,14 +304,16 @@ class LeaveService {
               return {
                 status_code: HttpStatus.OK,
                 data: true,
+                success: true,
               };
             } else
               return {
-                status_code: HttpStatus.BAD_REQUEST,
-                data: {
-                  message: "Unable To Update,No Changes Have Been Made",
-                  Error: "On Update Error",
-                },
+                status_code: HttpStatus.OK,
+                data: {},
+                // {
+                //   message: "Unable To Update,No Changes Have Been Made",
+                // },
+                success: false,
               };
           }
         }
@@ -308,23 +321,23 @@ class LeaveService {
         return {
           data: {
             message: "Leave Not Found",
-            error: "On Update Error",
           },
-          status_code: HttpStatus.BAD_REQUEST,
+          success: false,
+          status_code: HttpStatus.OK,
         };
     } catch (error) {
       console.log(error);
 
       return {
         status_code: HttpStatus.INTERNAL_SERVER_ERROR,
+        success: false,
         data: {
           message: "Internal Server Error",
-          Error: "On Update Error",
         },
       };
     }
   };
-  DeleteLeave = async (req: Request): Promise<IServiceResult> => {
+  DeleteLeave = async (req: Request): Promise<IServiceResult1> => {
     try {
       const findLeave = await leaveModel
         .findById(req.params._id)
@@ -336,8 +349,8 @@ class LeaveService {
           return {
             data: {
               message: "You Are Not Authorized To Delete This Leave",
-              error: "On Delete Error",
             },
+            success: false,
             status_code: HttpStatus.UNAUTHORIZED,
           };
         else {
@@ -347,11 +360,12 @@ class LeaveService {
 
           if (findLeave.leave_status != foundDefaultleaveStatus!._id.toString())
             return {
+              success: false,
               data: {
                 message:
                   "This Leave Can't Be Deleted Due To Changes Done By Admin Team",
               },
-              status_code: HttpStatus.BAD_REQUEST,
+              status_code: HttpStatus.OK,
             };
           else {
             let deleteLeaveRequest = await leaveModel.deleteOne({
@@ -362,14 +376,17 @@ class LeaveService {
               return {
                 status_code: HttpStatus.OK,
                 data: true,
+                success: true,
               };
             } else
               return {
-                status_code: HttpStatus.BAD_REQUEST,
-                data: {
-                  message: "An Error Occurred While Deleting Leave Request",
-                  Error: "On Delete Error",
-                },
+                status_code: HttpStatus.OK,
+                success: false,
+                data: {},
+
+                // {
+                //   message: "An Error Occurred While Deleting Leave Request"
+                // },
               };
           }
         }
@@ -377,23 +394,23 @@ class LeaveService {
         return {
           data: {
             message: "Leave Not Found",
-            error: "On Delete Error",
           },
-          status_code: HttpStatus.BAD_REQUEST,
+          success: false,
+          status_code: HttpStatus.OK,
         };
     } catch (error) {
       console.log(error);
 
       return {
         status_code: HttpStatus.INTERNAL_SERVER_ERROR,
+        success: false,
         data: {
           message: "Internal Server Error",
-          Error: "On Delete Error",
         },
       };
     }
   };
-  GetLeaveDetails = async (req: Request): Promise<IServiceResult> => {
+  GetLeaveDetails = async (req: Request): Promise<IServiceResult1> => {
     try {
       const findLeave = await leaveModel
         .findById(req.params._id)
@@ -416,7 +433,10 @@ class LeaveService {
 
         if (
           findRequestUserRolesDetails.some((e) =>
-            [EnumRoles.MASTERADMIN.valueOf(), EnumRoles.SUPERADMIN.valueOf().toString()].includes(e)
+            [
+              EnumRoles.MASTERADMIN.valueOf(),
+              EnumRoles.SUPERADMIN.valueOf().toString(),
+            ].includes(e)
           ) ||
           userDetails._id.toString() == employee._id.toString()
         ) {
@@ -461,39 +481,43 @@ class LeaveService {
                 leave_type: leave_types,
                 leave_category,
               },
+              success: true,
             };
           } else
             return {
-              status_code: HttpStatus.BAD_REQUEST,
-              data: {
-                message: "An Error Occurred While Getting Leave Details",
-                Error: "On Fetch Error",
-              },
+              status_code: HttpStatus.OK,
+              data: {},
+
+              // {
+              //   message: "An Error Occurred While Getting Leave Details"
+              // }
+
+              success: false,
             };
         } else
           return {
             data: {
               message: "You Are Not Authorized To Get This Leave Details",
-              error: "On Fetch Error",
             },
+            success: false,
             status_code: HttpStatus.UNAUTHORIZED,
           };
       } else
         return {
+          success: false,
           data: {
             message: "Leave Not Found",
-            error: "On Fetch Error",
           },
-          status_code: HttpStatus.BAD_REQUEST,
+          status_code: HttpStatus.OK,
         };
     } catch (error) {
       console.log(error);
 
       return {
         status_code: HttpStatus.INTERNAL_SERVER_ERROR,
+        success: false,
         data: {
           message: "Internal Server Error",
-          Error: "On Fetch Error",
         },
       };
     }
@@ -501,7 +525,7 @@ class LeaveService {
   ApproveLeaveOrRejectLeave = async (
     req: Request,
     model: LeaveApprovalViewmodel
-  ): Promise<IServiceResult> => {
+  ): Promise<IServiceResult1> => {
     try {
       let userDetails = <DocumentType<Employees>>req.user;
 
@@ -511,11 +535,13 @@ class LeaveService {
         managerId: string,
         masterAdminId: string;
       allroles.forEach((role) => {
-        if (role.name == EnumRoles.SUPERADMIN) superAdminId = role._id.toString();
+        if (role.name == EnumRoles.SUPERADMIN)
+          superAdminId = role._id.toString();
         else if (role.name == EnumRoles.MASTERADMIN)
           masterAdminId = role._id.toString();
         else if (role.name == EnumRoles.HR) hrId = role._id.toString();
-        else if (role.name == EnumRoles.MANAGER) managerId = role._id.toString();
+        else if (role.name == EnumRoles.MANAGER)
+          managerId = role._id.toString();
       });
 
       //
@@ -536,18 +562,19 @@ class LeaveService {
         let findLeave = await leaveModel.findById(model.leave_id);
         if (!findLeave) {
           return {
+            success: false,
             data: {
               message: "Leave Request Not Found",
-              error: "On Update Error",
             },
-            status_code: HttpStatus.BAD_REQUEST,
+            status_code: HttpStatus.OK,
           };
         } else {
           const foundEmployee = await Employee.findById(findLeave.employee_id);
           if (!foundEmployee) {
             return {
-              data: { message: "Employee Not Found", error: "On Update Error" },
-              status_code: HttpStatus.BAD_REQUEST,
+              success: false,
+              data: { message: "Employee Not Found" },
+              status_code: HttpStatus.OK,
             };
           } else {
             //check if employee is hr , then leave can be approved by master admin  or superadmin only
@@ -563,10 +590,10 @@ class LeaveService {
                 )
               )
                 return {
+                  success: false,
                   data: {
                     message:
                       "You Are Not Authorized For Update Leave Of Employee With HR Role",
-                    error: "On Update Error",
                   },
                   status_code: HttpStatus.UNAUTHORIZED,
                 };
@@ -586,6 +613,7 @@ class LeaveService {
                 )
               )
                 return {
+                  success: false,
                   data: {
                     message:
                       "You Are Not Authorized For Update Leave Of Employee With SuperAdmin Role",
@@ -603,6 +631,7 @@ class LeaveService {
               !foundEmployee.manager.includes(userDetails._id.toString())
             )
               return {
+                success: false,
                 data: {
                   message: "You Are Not Authorized For Update Leave Status",
                   error: "On Update Error",
@@ -618,8 +647,10 @@ class LeaveService {
                 foundEmployee!.organization_id!.toString()
             )
               return {
+                success: false,
                 data: {
-                  message: "You Are Not Authorized For Update Status Of This Leave",
+                  message:
+                    "You Are Not Authorized For Update Status Of This Leave",
                   error: "On Update Error",
                 },
                 status_code: HttpStatus.UNAUTHORIZED,
@@ -700,39 +731,45 @@ class LeaveService {
                 updateLeaveStatus.modifiedCount > 0
               )
                 return {
+                  success: true,
                   status_code: HttpStatus.OK,
 
-                  data: {
-                    message: "Leave Request Status Updated Successfully",
-                  },
+                  data: true,
+                  //  {
+                  //   message: "Leave Request Status Updated Successfully",
+                  // },
                 };
               else
                 return {
-                  data: {
-                    message: "Unable To Update,No Changes Have Been Made",
-                    error: "On Update Error",
-                  },
-                  status_code: HttpStatus.BAD_REQUEST,
+                  success: false,
+                  data: {},
+
+                  // {
+                  //   message: "Unable To Update,No Changes Have Been Made",
+                  //   error: "On Update Error",
+                  // },
+                  status_code: HttpStatus.OK,
                 };
             }
           }
         }
       } else
         return {
+          success: false,
           data: {
             message: "You Are Not Authorized For Update Leave Status",
-            error: "On Update Error",
           },
           status_code: HttpStatus.UNAUTHORIZED,
         };
     } catch (error) {
       return {
+        success: false,
         status_code: HttpStatus.INTERNAL_SERVER_ERROR,
         data: { message: "Internal Server Error", error: "On Update Error" },
       };
     }
   };
-  LeaveHistory = async (req: Request): Promise<IServiceResult> => {
+  LeaveHistory = async (req: Request): Promise<IServiceResult1> => {
     try {
       let userDetails = <DocumentType<Employees>>req.user;
       let findRequestUserRoles = await roles.find({
@@ -745,8 +782,9 @@ class LeaveService {
       let foundEmployee = await employeesModel.findById(req.params.employee_id);
       if (!foundEmployee)
         return {
-          data: { message: "Employee Not Found", error: "On Fetch Error" },
-          status_code: HttpStatus.BAD_REQUEST,
+          data: { message: "Employee Not Found" },
+          success: false,
+          status_code: HttpStatus.OK,
         };
       let findEmployeeManagersDetails = await employeesModel.find({
         _id: { $in: foundEmployee.manager },
@@ -758,7 +796,10 @@ class LeaveService {
       );
       if (
         findRequestUserRolesDetails.some((e) =>
-          [EnumRoles.MASTERADMIN.valueOf(), EnumRoles.SUPERADMIN.valueOf()].includes(e)
+          [
+            EnumRoles.MASTERADMIN.valueOf(),
+            EnumRoles.SUPERADMIN.valueOf(),
+          ].includes(e)
         ) ||
         userDetails._id.toString() == req.params.employee_id ||
         findEmployeeManagersEmails.includes(userDetails.email)
@@ -893,10 +934,10 @@ class LeaveService {
             endDate.getFullYear();
 
           let leaveHistoryResponse = {
-            "Since Joining Total Leave": leaveHistoryResultSinceJoined,
-            "This Year Total Leave": leaveHistoryResultThisYear,
-            "This Month Total leave": leaveHistoryResultThisMonth,
-            "Last taken Leave": `last taken leave from ${leave_start} to ${leave_end} ${
+            since_joining_total_leave: leaveHistoryResultSinceJoined,
+            this_year_total_leave: leaveHistoryResultThisYear,
+            this_month_total_leave: leaveHistoryResultThisMonth,
+            last_taken_leave: `last taken leave from ${leave_start} to ${leave_end} ${
               foundLeaveType && foundLeaveType.length > 0
                 ? foundLeaveType[0]!.leave_type
                 : ""
@@ -905,23 +946,26 @@ class LeaveService {
 
           return {
             data: leaveHistoryResponse,
+            success: true,
             status_code: HttpStatus.OK,
           };
         } else
           return {
-            data: {
-              message: "Leave History Not Found",
-              error: "On Fetch Error",
-            },
-            status_code: HttpStatus.BAD_REQUEST,
+            data: [],
+
+            // {
+            //   message: "Leave History Not Found",
+            // },
+            success: false,
+            status_code: HttpStatus.OK,
           };
       } else
         return {
           data: {
             message:
               "You Are Not Authorized For Fetching Leave History Of This Employee",
-            error: "on Fetch Error",
           },
+          success: false,
           status_code: HttpStatus.UNAUTHORIZED,
         };
     } catch (error) {
@@ -929,24 +973,26 @@ class LeaveService {
 
       return {
         status_code: HttpStatus.INTERNAL_SERVER_ERROR,
-        data: { message: "Internal Server Error", error: "On Fetch Error" },
+        success: false,
+        data: { message: "Internal Server Error" },
       };
     }
   };
   UploadLeaveAttachment = async (
     req: Request,
     model: AddLeaveReasonAttachmentViewmodel
-  ): Promise<IServiceResult> => {
+  ): Promise<IServiceResult1> => {
     try {
       let userDetails = <DocumentType<Employees>>req.user;
       const findEmployee = await employeesModel.findById(userDetails._id);
       if (!findEmployee)
         return {
+          success: false,
           data: {
             message: "Employee Not Found",
             error: "On Update Error",
           },
-          status_code: HttpStatus.BAD_REQUEST,
+          status_code: HttpStatus.OK,
         };
       else {
         let foundLeave = await leaveModel
@@ -954,15 +1000,17 @@ class LeaveService {
           .populate("leave_type");
         if (!foundLeave)
           return {
+            success: false,
             data: {
               message: "Leave Not Found",
               error: "On Update Error",
             },
-            status_code: HttpStatus.BAD_REQUEST,
+            status_code: HttpStatus.OK,
           };
 
         if (foundLeave && foundLeave.employee_id!.toString() != userDetails._id)
           return {
+            success: false,
             data: {
               message:
                 "You Are Not Authorized For Upload Documents For This Leave",
@@ -1045,29 +1093,30 @@ class LeaveService {
 
           //notify staff manager about leave request
           sendMessage.sendMail1(obj);
-          return { data: true, status_code: HttpStatus.OK };
+          return { data: true, status_code: HttpStatus.OK, success: true };
         } else
           return {
-            status_code: HttpStatus.BAD_REQUEST,
-            data: {
-              message: "Unable To Upload,No Changes Have Been Made",
-              Error: "On Update Error",
-            },
+            success: false,
+            status_code: HttpStatus.OK,
+            data: {},
+            //  {
+            //   message: "Unable To Upload,No Changes Have Been Made"
+            // },
           };
       }
     } catch (error) {
       console.log(error);
 
       return {
+        success: false,
         status_code: HttpStatus.INTERNAL_SERVER_ERROR,
         data: {
           message: "Internal Server Error",
-          Error: "On Update Error",
         },
       };
     }
   };
-  LeaveList = async (req: Request): Promise<IServiceResult> => {
+  LeaveList = async (req: Request): Promise<IServiceResult1> => {
     try {
       let userDetails = <DocumentType<Employees>>req.user;
 
@@ -1126,6 +1175,7 @@ class LeaveService {
         finalLeaveList.push(leave);
       });
       return {
+        success: true,
         data: finalLeaveList,
         status_code: HttpStatus.OK,
       };
@@ -1133,12 +1183,13 @@ class LeaveService {
       console.log(error);
 
       return {
+        success: false,
         status_code: HttpStatus.INTERNAL_SERVER_ERROR,
         data: { message: "Internal Server Error", error: "On Fetch Error" },
       };
     }
   };
-  LeaveListByAdmin = async (req: Request): Promise<IServiceResult> => {
+  LeaveListByAdmin = async (req: Request): Promise<IServiceResult1> => {
     try {
       let userDetails = <DocumentType<Employees>>req.user;
       let findRequestUserRoles = await roles.find({
@@ -1150,10 +1201,15 @@ class LeaveService {
 
       if (
         !findRequestUserRolesDetails.some((e) =>
-          [EnumRoles.MASTERADMIN.valueOf(), EnumRoles.SUPERADMIN.valueOf(), EnumRoles.HR.valueOf()].includes(e)
+          [
+            EnumRoles.MASTERADMIN.valueOf(),
+            EnumRoles.SUPERADMIN.valueOf(),
+            EnumRoles.HR.valueOf(),
+          ].includes(e)
         )
       )
         return {
+          success: false,
           data: {
             message: "You Are Not Authorized For Getting Leave List",
             error: "On Add Error",
@@ -1215,6 +1271,7 @@ class LeaveService {
         });
 
         return {
+          success: true,
           data: finalLeaveList,
           status_code: HttpStatus.OK,
         };
@@ -1223,12 +1280,13 @@ class LeaveService {
       console.log(error);
 
       return {
+        success: false,
         status_code: HttpStatus.INTERNAL_SERVER_ERROR,
         data: { message: "Internal Server Error", error: "On Fetch Error" },
       };
     }
   };
-  LeaveHistoryAllEmployee = async (req: Request): Promise<IServiceResult> => {
+  LeaveHistoryAllEmployee = async (req: Request): Promise<IServiceResult1> => {
     try {
       let userDetails = <DocumentType<Employees>>req.user;
       let findRequestUserRoles = await roles.find({
@@ -1239,7 +1297,10 @@ class LeaveService {
       });
       if (
         findRequestUserRolesDetails.some((e) =>
-          [EnumRoles.SUPERADMIN.valueOf(), EnumRoles.MASTERADMIN.valueOf()].includes(e)
+          [
+            EnumRoles.SUPERADMIN.valueOf(),
+            EnumRoles.MASTERADMIN.valueOf(),
+          ].includes(e)
         )
       ) {
         let foundLeaveHistory: Leave[] = [];
@@ -1414,10 +1475,10 @@ class LeaveService {
               endDate.getFullYear();
 
             let leaveHistoryResponse = {
-              "Since Joining Total Leave": leaveHistoryResultSinceJoined,
-              "This Year Total Leave": leaveHistoryResultThisYear,
-              "This Month Total leave": leaveHistoryResultThisMonth,
-              "Last taken Leave": `last taken leave from ${leave_start} to ${leave_end} ${
+              since_joining_total_leave: leaveHistoryResultSinceJoined,
+              this_year_total_leave: leaveHistoryResultThisYear,
+              this_month_total_leave: leaveHistoryResultThisMonth,
+              last_taken_leave: `last taken leave from ${leave_start} to ${leave_end} ${
                 foundLeaveType && foundLeaveType.length > 0
                   ? foundLeaveType[0]!.leave_type
                   : ""
@@ -1456,21 +1517,24 @@ class LeaveService {
           });
 
           return {
-            //result,
+            success: true,
             data: _.uniqBy(result, "employee"),
-            //data:finalResponse,
+
             status_code: HttpStatus.OK,
           };
         } else
           return {
-            data: {
-              message: "Leave History Not Found",
-              error: "On Fetch Error",
-            },
-            status_code: HttpStatus.BAD_REQUEST,
+            success: false,
+            data: {},
+            //  {
+            //   message: "Leave History Not Found",
+            //   error: "On Fetch Error",
+            // },
+            status_code: HttpStatus.OK,
           };
       } else
         return {
+          success: false,
           data: {
             message:
               "You Are Not Authorized For Fetching Leave History Of All Employee",
@@ -1482,6 +1546,7 @@ class LeaveService {
       console.log(error);
 
       return {
+        success: false,
         status_code: HttpStatus.INTERNAL_SERVER_ERROR,
         data: { message: "Internal Server Error", error: "On Fetch Error" },
       };
@@ -1493,7 +1558,7 @@ class LeaveService {
   AddLeaveType = async (
     req: Request,
     model: AddLeaveTypeViewmodel
-  ): Promise<IServiceResult> => {
+  ): Promise<IServiceResult1> => {
     try {
       let userDetails = <DocumentType<Employees>>req.user;
       let findRequestUserRoles = await roles.find({
@@ -1505,6 +1570,7 @@ class LeaveService {
 
       if (!findRequestUserRolesDetails.includes("masteradmin"))
         return {
+          success: false,
           data: {
             message: "You Are Not Authorized For Add Leave Type",
             error: "On Add Error",
@@ -1521,20 +1587,24 @@ class LeaveService {
 
           if (addLeaveType)
             return {
+              success: true,
               status_code: HttpStatus.OK,
 
               data: addLeaveType,
             };
           else
             return {
-              status_code: HttpStatus.BAD_REQUEST,
-              data: {
-                message: " An Error Occurred While Adding Leave Type",
-                Error: "On Add Error",
-              },
+              success: false,
+              status_code: HttpStatus.OK,
+              data: {},
+              //  {
+              //   message: " An Error Occurred While Adding Leave Type",
+              //   Error: "On Add Error",
+              // },
             };
         } else
           return {
+            success: false,
             status_code: HttpStatus.BAD_REQUEST,
             data: {
               message: "This Leave Type Already Existed ",
@@ -1546,15 +1616,15 @@ class LeaveService {
       console.log(error);
 
       return {
+        success: false,
         status_code: HttpStatus.INTERNAL_SERVER_ERROR,
         data: {
           message: "Internal Server Error",
-          Error: "On Add Error",
         },
       };
     }
   };
-  DeleteLeaveType = async (req: Request): Promise<IServiceResult> => {
+  DeleteLeaveType = async (req: Request): Promise<IServiceResult1> => {
     try {
       let userDetails = <DocumentType<Employees>>req.user;
       let findRequestUserRoles = await roles.find({
@@ -1566,6 +1636,7 @@ class LeaveService {
 
       if (!findRequestUserRolesDetails.includes("masteradmin"))
         return {
+          success: false,
           data: {
             message: "You Are Not Authorized For Delete Leave Type",
             error: "On Delete Error",
@@ -1579,23 +1650,28 @@ class LeaveService {
 
         if (deleteLeaveType && deleteLeaveType.deletedCount > 0)
           return {
+            success: true,
             status_code: HttpStatus.OK,
 
             data: true,
           };
         else
           return {
-            status_code: HttpStatus.BAD_REQUEST,
-            data: {
-              message: " An Error Occurred While Deleting Leave Type",
-              Error: "On Delete Error",
-            },
+            success: false,
+            status_code: HttpStatus.OK,
+            data: {},
+
+            // {
+            //   message: " An Error Occurred While Deleting Leave Type",
+            //   Error: "On Delete Error",
+            // },
           };
       }
     } catch (error) {
       console.log(error);
 
       return {
+        success: false,
         status_code: HttpStatus.INTERNAL_SERVER_ERROR,
         data: {
           message: "Internal Server Error",
@@ -1605,7 +1681,7 @@ class LeaveService {
     }
   };
 
-  getLeaveTypeDetails = async (req: Request): Promise<IServiceResult> => {
+  getLeaveTypeDetails = async (req: Request): Promise<IServiceResult1> => {
     try {
       let userDetails = <DocumentType<Employees>>req.user;
       let findRequestUserRoles = await roles.find({
@@ -1617,6 +1693,7 @@ class LeaveService {
 
       if (!findRequestUserRolesDetails.includes("masteradmin"))
         return {
+          success: false,
           data: {
             message: "You Are Not Authorized For getting Leave Type Details",
             error: "On Fetch Error",
@@ -1630,22 +1707,26 @@ class LeaveService {
 
         if (getLeaveTypeDetails)
           return {
+            success: true,
             status_code: HttpStatus.OK,
 
             data: getLeaveTypeDetails,
           };
         else
           return {
-            status_code: HttpStatus.BAD_REQUEST,
-            data: {
-              message: " An Error Occurred While Getting Leave Type Details",
-              Error: "On Fetch Error",
-            },
+            success: false,
+            status_code: HttpStatus.OK,
+            data: {},
+            //  {
+            //   message: " An Error Occurred While Getting Leave Type Details",
+            //   Error: "On Fetch Error",
+            // },
           };
       }
     } catch (error) {
       console.log(error);
       return {
+        success: false,
         status_code: HttpStatus.INTERNAL_SERVER_ERROR,
         data: {
           message: "Internal Server Error",
@@ -1657,7 +1738,7 @@ class LeaveService {
   UpdateLeaveType = async (
     req: Request,
     model: UpdateLeaveTypeViewmodel
-  ): Promise<IServiceResult> => {
+  ): Promise<IServiceResult1> => {
     try {
       let userDetails = <DocumentType<Employees>>req.user;
       let findRequestUserRoles = await roles.find({
@@ -1669,6 +1750,7 @@ class LeaveService {
 
       if (!findRequestUserRolesDetails.includes("masteradmin"))
         return {
+          success: false,
           data: {
             message: "You Are Not Authorized For Update Leave Type",
             error: "On Update Error",
@@ -1692,17 +1774,16 @@ class LeaveService {
             );
 
             if (updateLeaveType && updateLeaveType.modifiedCount > 0)
-              return {
-                status_code: HttpStatus.OK,
-                data: true,
-              };
+              return { success: true, status_code: HttpStatus.OK, data: true };
             else
               return {
-                status_code: HttpStatus.BAD_REQUEST,
-                data: {
-                  message: "Unable To Update,No Changes Have Been Made",
-                  Error: "On Update Error",
-                },
+                success: false,
+                status_code: HttpStatus.OK,
+                data: {},
+                //  {
+                //   message: "Unable To Update,No Changes Have Been Made",
+                //   Error: "On Update Error",
+                // },
               };
           } else {
             if (checkLeaveTypeExistence._id.toString() == model.leave_type_id) {
@@ -1714,9 +1795,10 @@ class LeaveService {
                     model.deduction_value ?? foundLeaveType.deduction_value,
                 }
               );
-              return { data: true, status_code: HttpStatus.OK };
+              return { data: true, status_code: HttpStatus.OK, success: true };
             } else
               return {
+                success: false,
                 status_code: HttpStatus.BAD_REQUEST,
                 data: {
                   message: "This Leave Type Already Existed ",
@@ -1726,7 +1808,8 @@ class LeaveService {
           }
         } else
           return {
-            status_code: HttpStatus.BAD_REQUEST,
+            success: false,
+            status_code: HttpStatus.OK,
             data: {
               message: "Leave Type Not Found",
               Error: "On Update Error",
@@ -1737,6 +1820,7 @@ class LeaveService {
       console.log(error);
 
       return {
+        success: false,
         status_code: HttpStatus.INTERNAL_SERVER_ERROR,
         data: {
           message: "Internal Server Error",
@@ -1745,27 +1829,30 @@ class LeaveService {
       };
     }
   };
-  AllLeaveTypeList = async (req: Request): Promise<IServiceResult> => {
+  AllLeaveTypeList = async (req: Request): Promise<IServiceResult1> => {
     try {
       let leaveTypeList = await LeaveTypeModel.find({});
       if (leaveTypeList && leaveTypeList.length > 0)
         return {
           status_code: HttpStatus.OK,
-
+          success: true,
           data: leaveTypeList,
         };
       else
         return {
-          status_code: HttpStatus.BAD_REQUEST,
-          data: {
-            message: "Leave Types List Not Found",
-            Error: "On Fetch Error",
-          },
+          success: false,
+          status_code: HttpStatus.OK,
+          data: [],
+          //  {
+          //   message: "Leave Types List Not Found",
+          //   Error: "On Fetch Error",
+          // },
         };
     } catch (error) {
       console.log(error);
 
       return {
+        success: false,
         status_code: HttpStatus.INTERNAL_SERVER_ERROR,
         data: {
           message: "Internal Server Error",
@@ -1780,7 +1867,7 @@ class LeaveService {
   AddLeaveStatus = async (
     req: Request,
     model: AddLeaveStatusViewmodel
-  ): Promise<IServiceResult> => {
+  ): Promise<IServiceResult1> => {
     try {
       let userDetails = <DocumentType<Employees>>req.user;
       let findRequestUserRoles = await roles.find({
@@ -1792,6 +1879,7 @@ class LeaveService {
 
       if (!findRequestUserRolesDetails.includes("masteradmin"))
         return {
+          success: false,
           data: {
             message: "You Are Not Authorized For Add Leave Status",
             error: "On Add Error",
@@ -1821,20 +1909,24 @@ class LeaveService {
 
           if (addLeaveStatus)
             return {
+              success: true,
               status_code: HttpStatus.OK,
 
               data: addLeaveStatus,
             };
           else
             return {
-              status_code: HttpStatus.BAD_REQUEST,
-              data: {
-                message: " An Error Occurred While Adding Leave Status",
-                Error: "On Add Error",
-              },
+              success: false,
+              status_code: HttpStatus.OK,
+              data: {},
+              // {
+              //   message: " An Error Occurred While Adding Leave Status",
+              //   Error: "On Add Error",
+              // },
             };
         } else
           return {
+            success: false,
             status_code: HttpStatus.BAD_REQUEST,
             data: {
               message: "This Leave Status Already Existed ",
@@ -1846,6 +1938,7 @@ class LeaveService {
       console.log(error);
 
       return {
+        success: false,
         status_code: HttpStatus.INTERNAL_SERVER_ERROR,
         data: {
           message: "Internal Server Error",
@@ -1854,7 +1947,7 @@ class LeaveService {
       };
     }
   };
-  DeleteLeaveStatus = async (req: Request): Promise<IServiceResult> => {
+  DeleteLeaveStatus = async (req: Request): Promise<IServiceResult1> => {
     try {
       let userDetails = <DocumentType<Employees>>req.user;
       let findRequestUserRoles = await roles.find({
@@ -1866,6 +1959,7 @@ class LeaveService {
 
       if (!findRequestUserRolesDetails.includes("masteradmin"))
         return {
+          success: false,
           data: {
             message: "You Are Not Authorized For Delete Leave Status",
             error: "On Delete Error",
@@ -1879,23 +1973,27 @@ class LeaveService {
 
         if (deleteLeaveStatus && deleteLeaveStatus.deletedCount > 0)
           return {
+            success: true,
             status_code: HttpStatus.OK,
 
             data: true,
           };
         else
           return {
-            status_code: HttpStatus.BAD_REQUEST,
-            data: {
-              message: " An Error Occurred While Deleting Leave Status",
-              Error: "On Delete Error",
-            },
+            success: false,
+            status_code: HttpStatus.OK,
+            data: {},
+            // {
+            //   message: " An Error Occurred While Deleting Leave Status",
+            //   Error: "On Delete Error",
+            // },
           };
       }
     } catch (error) {
       console.log(error);
 
       return {
+        success: false,
         status_code: HttpStatus.INTERNAL_SERVER_ERROR,
         data: {
           message: "Internal Server Error",
@@ -1907,7 +2005,7 @@ class LeaveService {
   UpdateLeaveStatus = async (
     req: Request,
     model: UpdateLeaveStatusViewmodel
-  ): Promise<IServiceResult> => {
+  ): Promise<IServiceResult1> => {
     try {
       let userDetails = <DocumentType<Employees>>req.user;
       let findRequestUserRoles = await roles.find({
@@ -1919,6 +2017,7 @@ class LeaveService {
 
       if (!findRequestUserRolesDetails.includes("masteradmin"))
         return {
+          success: false,
           data: {
             message: "You Are Not Authorized For Update Leave Status",
             error: "On Update Error",
@@ -1950,6 +2049,7 @@ class LeaveService {
               let foundAllStatus = await LeaveStatusModel.find({});
               if (foundAllStatus.length === 1)
                 return {
+                  success: false,
                   data: {
                     message: "Default Status Can't Be Updated",
                     error: "On Update Error",
@@ -1982,25 +2082,26 @@ class LeaveService {
             );
 
             if (updateLeaveStatus && updateLeaveStatus.modifiedCount > 0)
-              return {
-                status_code: HttpStatus.OK,
-                data: true,
-              };
+              return { success: true, status_code: HttpStatus.OK, data: true };
             else
               return {
-                status_code: HttpStatus.BAD_REQUEST,
-                data: {
-                  message: "Unable To Update,No Changes Have Been Made",
-                  Error: "On Update Error",
-                },
+                success: false,
+                status_code: HttpStatus.OK,
+                data: {},
+
+                // {
+                //   message: "Unable To Update,No Changes Have Been Made",
+                //   Error: "On Update Error",
+                // },
               };
           } else {
             if (
               checkLeaveStatusExistence._id.toString() == model.leave_status_id
             )
-              return { data: true, status_code: HttpStatus.OK };
+              return { data: true, status_code: HttpStatus.OK, success: true };
             else
               return {
+                success: false,
                 status_code: HttpStatus.BAD_REQUEST,
                 data: {
                   message: "This Leave Status Already Existed ",
@@ -2010,17 +2111,20 @@ class LeaveService {
           }
         } else
           return {
-            status_code: HttpStatus.BAD_REQUEST,
-            data: {
-              message: "Leave Status Not Found",
-              Error: "On Update Error",
-            },
+            success: false,
+            status_code: HttpStatus.OK,
+            data: {},
+            // {
+            //   message: "Leave Status Not Found",
+            //   Error: "On Update Error",
+            // },
           };
       }
     } catch (error) {
       console.log(error);
 
       return {
+        success: false,
         status_code: HttpStatus.INTERNAL_SERVER_ERROR,
         data: {
           message: "Internal Server Error",
@@ -2029,28 +2133,32 @@ class LeaveService {
       };
     }
   };
-  AllLeaveStatusList = async (req: Request): Promise<IServiceResult> => {
+  AllLeaveStatusList = async (req: Request): Promise<IServiceResult1> => {
     try {
       let leaveStatusList = await LeaveStatusModel.find({});
 
       if (leaveStatusList && leaveStatusList.length > 0)
         return {
+          success: true,
           status_code: HttpStatus.OK,
 
           data: leaveStatusList,
         };
       else
         return {
-          status_code: HttpStatus.BAD_REQUEST,
-          data: {
-            message: "Leave Status List Not Found",
-            Error: "On Fetch Error",
-          },
+          success: false,
+          status_code: HttpStatus.OK,
+          data: [],
+          //  {
+          //   message: "Leave Status List Not Found",
+          //   Error: "On Fetch Error",
+          // },
         };
     } catch (error) {
       console.log(error);
 
       return {
+        success: false,
         status_code: HttpStatus.INTERNAL_SERVER_ERROR,
         data: {
           message: "Internal Server Error",
@@ -2059,7 +2167,7 @@ class LeaveService {
       };
     }
   };
-  GetLeaveStatus = async (req: Request): Promise<IServiceResult> => {
+  GetLeaveStatus = async (req: Request): Promise<IServiceResult1> => {
     try {
       let userDetails = <DocumentType<Employees>>req.user;
       let findRequestUserRoles = await roles.find({
@@ -2071,6 +2179,7 @@ class LeaveService {
 
       if (!findRequestUserRolesDetails.includes("masteradmin"))
         return {
+          success: false,
           data: {
             message: "You Are Not Authorized For Get Leave Status",
             error: "On Fetch Error",
@@ -2084,23 +2193,27 @@ class LeaveService {
 
         if (getLeaveStatusDetails)
           return {
+            success: true,
             status_code: HttpStatus.OK,
 
             data: getLeaveStatusDetails,
           };
         else
           return {
-            status_code: HttpStatus.BAD_REQUEST,
-            data: {
-              message: "Leave Status Not Found",
-              Error: "On Fetch Error",
-            },
+            success: false,
+            status_code: HttpStatus.OK,
+            data: {},
+            //  {
+            //   message: "Leave Status Not Found",
+            //   Error: "On Fetch Error",
+            // },
           };
       }
     } catch (error) {
       console.log(error);
 
       return {
+        success: false,
         status_code: HttpStatus.INTERNAL_SERVER_ERROR,
         data: {
           message: "Internal Server Error",
@@ -2114,7 +2227,7 @@ class LeaveService {
   AddLeaveReason = async (
     req: Request,
     model: AddLeaveReasonViewmodel
-  ): Promise<IServiceResult> => {
+  ): Promise<IServiceResult1> => {
     try {
       let userDetails = <DocumentType<Employees>>req.user;
       let findRequestUserRoles = await roles.find({
@@ -2126,6 +2239,7 @@ class LeaveService {
 
       if (!findRequestUserRolesDetails.includes("masteradmin"))
         return {
+          success: false,
           data: {
             message: "You Are Not Authorized For Add Leave Reason",
             error: "On Add Error",
@@ -2143,20 +2257,24 @@ class LeaveService {
 
           if (addLeaveReason)
             return {
+              success: true,
               status_code: HttpStatus.OK,
 
               data: addLeaveReason,
             };
           else
             return {
-              status_code: HttpStatus.BAD_REQUEST,
-              data: {
-                message: " An Error Occurred While Adding Leave Reason",
-                Error: "On Add Error",
-              },
+              success: false,
+              status_code: HttpStatus.OK,
+              data: {},
+              // {
+              //   message: " An Error Occurred While Adding Leave Reason",
+              //   Error: "On Add Error",
+              // },
             };
         } else
           return {
+            success: false,
             status_code: HttpStatus.BAD_REQUEST,
             data: {
               message: "This Leave Reason Already Existed ",
@@ -2168,6 +2286,7 @@ class LeaveService {
       console.log(error);
 
       return {
+        success: false,
         status_code: HttpStatus.INTERNAL_SERVER_ERROR,
         data: {
           message: "Internal Server Error",
@@ -2176,7 +2295,7 @@ class LeaveService {
       };
     }
   };
-  DeleteLeaveReason = async (req: Request): Promise<IServiceResult> => {
+  DeleteLeaveReason = async (req: Request): Promise<IServiceResult1> => {
     try {
       let userDetails = <DocumentType<Employees>>req.user;
       let findRequestUserRoles = await roles.find({
@@ -2188,6 +2307,7 @@ class LeaveService {
 
       if (!findRequestUserRolesDetails.includes("masteradmin"))
         return {
+          success: false,
           data: {
             message: "You Are Not Authorized For Delete Leave Reason",
             error: "On Delete Error",
@@ -2201,13 +2321,15 @@ class LeaveService {
 
         if (deleteLeaveReason && deleteLeaveReason.deletedCount > 0)
           return {
+            success: true,
             status_code: HttpStatus.OK,
 
             data: true,
           };
         else
           return {
-            status_code: HttpStatus.BAD_REQUEST,
+            success: false,
+            status_code: HttpStatus.OK,
             data: {
               message: "An Error Occurred While Deleting Leave Reason",
               Error: "On Delete Error",
@@ -2218,6 +2340,7 @@ class LeaveService {
       console.log(error);
 
       return {
+        success: false,
         status_code: HttpStatus.INTERNAL_SERVER_ERROR,
         data: {
           message: "Internal Server Error",
@@ -2229,7 +2352,7 @@ class LeaveService {
   UpdateLeaveReason = async (
     req: Request,
     model: UpdateLeaveReasonViewmodel
-  ): Promise<IServiceResult> => {
+  ): Promise<IServiceResult1> => {
     try {
       let userDetails = <DocumentType<Employees>>req.user;
       let findRequestUserRoles = await roles.find({
@@ -2241,6 +2364,7 @@ class LeaveService {
 
       if (!findRequestUserRolesDetails.includes("masteradmin"))
         return {
+          success: false,
           data: {
             message: "You Are Not Authorized For Update Leave Reason",
             error: "On Update Error",
@@ -2264,13 +2388,11 @@ class LeaveService {
             );
 
             if (updateLeaveReason && updateLeaveReason.modifiedCount > 0)
-              return {
-                status_code: HttpStatus.OK,
-                data: true,
-              };
+              return { success: true, status_code: HttpStatus.OK, data: true };
             else
               return {
-                status_code: HttpStatus.BAD_REQUEST,
+                success: false,
+                status_code: HttpStatus.OK,
                 data: {
                   message: "Unable To Update,No Changes Have Been Made",
                   Error: "On Update Error",
@@ -2280,9 +2402,10 @@ class LeaveService {
             if (
               checkLeaveReasonExistence._id.toString() == model.leave_reason_id
             )
-              return { data: true, status_code: HttpStatus.OK };
+              return { data: true, status_code: HttpStatus.OK, success: true };
             else
               return {
+                success: false,
                 status_code: HttpStatus.BAD_REQUEST,
                 data: {
                   message: "This Leave Reason Already Existed ",
@@ -2292,7 +2415,8 @@ class LeaveService {
           }
         } else
           return {
-            status_code: HttpStatus.BAD_REQUEST,
+            success: false,
+            status_code: HttpStatus.OK,
             data: {
               message: "Leave Reason Not Found",
               Error: "On Update Error",
@@ -2303,6 +2427,7 @@ class LeaveService {
       console.log(error);
 
       return {
+        success: false,
         status_code: HttpStatus.INTERNAL_SERVER_ERROR,
         data: {
           message: "Internal Server Error",
@@ -2311,28 +2436,31 @@ class LeaveService {
       };
     }
   };
-  AllLeaveReasonList = async (req: Request): Promise<IServiceResult> => {
+  AllLeaveReasonList = async (req: Request): Promise<IServiceResult1> => {
     try {
       let leaveReasonList = await LeaveReasonModel.find({});
 
       if (leaveReasonList && leaveReasonList.length > 0)
         return {
           status_code: HttpStatus.OK,
-
+          success: true,
           data: leaveReasonList,
         };
       else
         return {
-          status_code: HttpStatus.BAD_REQUEST,
-          data: {
-            message: "Leave Reason List Not Found",
-            Error: "On Fetch Error",
-          },
+          success: false,
+          status_code: HttpStatus.OK,
+          data: [],
+          //  {
+          //   message: "Leave Reason List Not Found",
+          //   Error: "On Fetch Error",
+          // },
         };
     } catch (error) {
       console.log(error);
 
       return {
+        success: false,
         status_code: HttpStatus.INTERNAL_SERVER_ERROR,
         data: {
           message: "Internal Server Error",
@@ -2346,7 +2474,7 @@ class LeaveService {
   AddLeaveDeductionCategory = async (
     req: Request,
     model: AddLeaveDeductionCategoryViewmodel
-  ): Promise<IServiceResult> => {
+  ): Promise<IServiceResult1> => {
     try {
       let userDetails = <DocumentType<Employees>>req.user;
       let findRequestUserRoles = await roles.find({
@@ -2358,6 +2486,7 @@ class LeaveService {
 
       if (!findRequestUserRolesDetails.includes("masteradmin"))
         return {
+          success: false,
           data: {
             message: "You Are Not Authorized For Add Leave Deduction Category",
             error: "On Add Error",
@@ -2378,13 +2507,15 @@ class LeaveService {
 
           if (addLeaveDeductionCategory)
             return {
+              success: true,
               status_code: HttpStatus.OK,
 
               data: addLeaveDeductionCategory,
             };
           else
             return {
-              status_code: HttpStatus.BAD_REQUEST,
+              success: false,
+              status_code: HttpStatus.OK,
               data: {
                 message:
                   "An Error Occurred While Adding Leave Deduction Category",
@@ -2393,6 +2524,7 @@ class LeaveService {
             };
         } else
           return {
+            success: false,
             status_code: HttpStatus.BAD_REQUEST,
             data: {
               message: "This Leave Deduction Category Already Existed ",
@@ -2404,6 +2536,7 @@ class LeaveService {
       console.log(error);
 
       return {
+        success: false,
         status_code: HttpStatus.INTERNAL_SERVER_ERROR,
         data: {
           message: "Internal Server Error",
@@ -2414,7 +2547,7 @@ class LeaveService {
   };
   DeleteLeaveDeductionCategory = async (
     req: Request
-  ): Promise<IServiceResult> => {
+  ): Promise<IServiceResult1> => {
     try {
       let userDetails = <DocumentType<Employees>>req.user;
       let findRequestUserRoles = await roles.find({
@@ -2426,6 +2559,7 @@ class LeaveService {
 
       if (!findRequestUserRolesDetails.includes("masteradmin"))
         return {
+          success: false,
           data: {
             message:
               "You Are Not Authorized For Delete Leave Deduction Category",
@@ -2443,13 +2577,15 @@ class LeaveService {
           deleteLeaveDeductionCategory.deletedCount > 0
         )
           return {
+            success: true,
             status_code: HttpStatus.OK,
 
             data: true,
           };
         else
           return {
-            status_code: HttpStatus.BAD_REQUEST,
+            success: false,
+            status_code: HttpStatus.OK,
             data: {
               message:
                 "An Error Occurred While Deleting Leave Deduction Category",
@@ -2461,6 +2597,7 @@ class LeaveService {
       console.log(error);
 
       return {
+        success: false,
         status_code: HttpStatus.INTERNAL_SERVER_ERROR,
         data: {
           message: "Internal Server Error",
@@ -2472,7 +2609,7 @@ class LeaveService {
   UpdateLeaveDeductionCategory = async (
     req: Request,
     model: UpdateLeaveDeductionCategoryViewmodel
-  ): Promise<IServiceResult> => {
+  ): Promise<IServiceResult1> => {
     try {
       let userDetails = <DocumentType<Employees>>req.user;
       let findRequestUserRoles = await roles.find({
@@ -2484,6 +2621,7 @@ class LeaveService {
 
       if (!findRequestUserRolesDetails.includes("masteradmin"))
         return {
+          success: false,
           data: {
             message:
               "You Are Not Authorized For Update Leave Deduction Category",
@@ -2513,13 +2651,11 @@ class LeaveService {
               updateLeaveDeductionCategory &&
               updateLeaveDeductionCategory.modifiedCount > 0
             )
-              return {
-                status_code: HttpStatus.OK,
-                data: true,
-              };
+              return { success: true, status_code: HttpStatus.OK, data: true };
             else
               return {
-                status_code: HttpStatus.BAD_REQUEST,
+                success: false,
+                status_code: HttpStatus.OK,
                 data: {
                   message: "Unable To Update,No Changes Have Been Made",
                   Error: "On Update Error",
@@ -2536,9 +2672,10 @@ class LeaveService {
                   modelToSave
                 );
 
-              return { data: true, status_code: HttpStatus.OK };
+              return { data: true, status_code: HttpStatus.OK, success: true };
             } else
               return {
+                success: false,
                 status_code: HttpStatus.BAD_REQUEST,
                 data: {
                   message: "This Leave Deduction Category Already Existed ",
@@ -2548,7 +2685,8 @@ class LeaveService {
           }
         } else
           return {
-            status_code: HttpStatus.BAD_REQUEST,
+            success: false,
+            status_code: HttpStatus.OK,
             data: {
               message: "Leave Deduction Category Not Found",
               Error: "On Update Error",
@@ -2559,6 +2697,7 @@ class LeaveService {
       console.log(error);
 
       return {
+        success: false,
         status_code: HttpStatus.INTERNAL_SERVER_ERROR,
         data: {
           message: "Internal Server Error",
@@ -2569,27 +2708,31 @@ class LeaveService {
   };
   AllLeaveDeductionCategoryList = async (
     req: Request
-  ): Promise<IServiceResult> => {
+  ): Promise<IServiceResult1> => {
     try {
       let leaveDeductionCategoryList = await LeaveDeductionModel.find({}, {});
 
       if (leaveDeductionCategoryList && leaveDeductionCategoryList.length > 0)
         return {
+          success: true,
           status_code: HttpStatus.OK,
 
           data: leaveDeductionCategoryList,
         };
       else
         return {
-          status_code: HttpStatus.BAD_REQUEST,
-          data: {
-            message: "Leave Deduction Category List Not Found",
-            Error: "On Fetch Error",
-          },
+          success: false,
+          status_code: HttpStatus.OK,
+          data: [],
+          // {
+          //   message: "Leave Deduction Category List Not Found",
+          //   Error: "On Fetch Error",
+          // },
         };
     } catch (error) {
       console.log(error);
       return {
+        success: false,
         status_code: HttpStatus.INTERNAL_SERVER_ERROR,
         data: {
           message: "Internal Server Error",
@@ -2601,7 +2744,7 @@ class LeaveService {
 
   GetLeaveDeductionCategoryDetails = async (
     req: Request
-  ): Promise<IServiceResult> => {
+  ): Promise<IServiceResult1> => {
     try {
       let userDetails = <DocumentType<Employees>>req.user;
       let findRequestUserRoles = await roles.find({
@@ -2613,6 +2756,7 @@ class LeaveService {
 
       if (!findRequestUserRolesDetails.includes("masteradmin"))
         return {
+          success: false,
           data: {
             message:
               "You Are Not Authorized For Get Leave Deduction Category Details",
@@ -2627,22 +2771,26 @@ class LeaveService {
 
         if (leaveDeductionCategoryDetails)
           return {
+            success: true,
             status_code: HttpStatus.OK,
 
             data: leaveDeductionCategoryDetails,
           };
         else
           return {
-            status_code: HttpStatus.BAD_REQUEST,
-            data: {
-              message: "Leave Deduction Category Details Not Found",
-              Error: "On Fetch Error",
-            },
+            success: false,
+            status_code: HttpStatus.OK,
+            data: {},
+            // {
+            //   message: "Leave Deduction Category Details Not Found",
+            //   Error: "On Fetch Error",
+            // },
           };
       }
     } catch (error) {
       console.log(error);
       return {
+        success: false,
         status_code: HttpStatus.INTERNAL_SERVER_ERROR,
         data: {
           message: "Internal Server Error",

@@ -8,7 +8,10 @@ import _ from "lodash";
 import moment from "moment";
 import mongoose from "mongoose";
 import { v4 } from "uuid";
-import Utility, { IServiceResult } from "../../../common/common-methods";
+import Utility, {
+  IServiceResult,
+  IServiceResult1
+} from "../../../common/common-methods";
 import { IJWTPayload } from "../../../common/interface/jwtpayload";
 import uploadService from "../../../common/upload/upload_media.service";
 import employeeModel, {
@@ -76,7 +79,7 @@ class EmployeeService {
   addEmployee = async (
     req: Request,
     model: AddEmployeeAccountViewmodel
-  ): Promise<IServiceResult> => {
+  ): Promise<IServiceResult1> => {
     try {
       let allRoles = await roles.find({});
       let userDetails = <DocumentType<Employees>>req.user;
@@ -99,8 +102,8 @@ class EmployeeService {
         return {
           data: {
             message: "You Are Not Authorized For Add Employees",
-            error: "On Add Error",
           },
+          success: false,
           status_code: HttpStatus.UNAUTHORIZED,
         };
       else {
@@ -108,9 +111,10 @@ class EmployeeService {
         if (!model.emp_personal_email)
           return {
             data: {
-              message: "emp_personal_email can not be empty or undefined",
-              error: "On Add Error",
+              message:
+                " employee personal email feild can not be empty or undefined",
             },
+            success: false,
             status_code: HttpStatus.BAD_REQUEST,
           };
 
@@ -122,8 +126,8 @@ class EmployeeService {
             return {
               data: {
                 message: "You Are Not Authorized For Add SuperAdmin Employees",
-                error: "On Add Error",
               },
+              success: false,
               status_code: HttpStatus.UNAUTHORIZED,
             };
         }
@@ -139,8 +143,8 @@ class EmployeeService {
             return {
               data: {
                 message: "You Are Not Authorized For Add Hr Employees",
-                error: "On Add Error",
               },
+              success: false,
               status_code: HttpStatus.UNAUTHORIZED,
             };
         }
@@ -158,8 +162,8 @@ class EmployeeService {
             return {
               data: {
                 message: "You Are Not Authorized For Add Employees",
-                error: "On Add Error",
               },
+              success: false,
               status_code: HttpStatus.UNAUTHORIZED,
             };
         }
@@ -198,9 +202,9 @@ class EmployeeService {
           return {
             data: {
               message: "Employee Already Exists With This Email",
-              error: "On Add Error",
             },
-            status_code: HttpStatus.BAD_REQUEST,
+            success: false,
+            status_code: HttpStatus.OK,
           };
         } else {
           let salt = await bcrypt.genSalt(11);
@@ -255,14 +259,15 @@ class EmployeeService {
           //notify staff manager about leave request
           sendMessage.sendMail1(obj);
 
-          if (result) return { status_code: HttpStatus.OK, data: result };
+          if (result)
+            return { status_code: HttpStatus.OK, data: result, success: true };
           else
             return {
-              status_code: HttpStatus.BAD_REQUEST,
+              status_code: HttpStatus.OK,
               data: {
                 message: "Employee Account Not Created",
-                Error: "On Add Error",
               },
+              success: false,
             };
         }
       }
@@ -272,21 +277,22 @@ class EmployeeService {
         status_code: HttpStatus.INTERNAL_SERVER_ERROR,
         data: {
           message: "Internal Server Error",
-          Error: "On Add Error",
         },
+        success: false,
       };
     }
   };
   updateEmployee = async (
     req: Request,
     model: UpdateEmployeeAccountViewmodel
-  ): Promise<IServiceResult> => {
+  ): Promise<IServiceResult1> => {
     try {
       let foundEmployee = await employeeModel.findById(model._id);
       if (!foundEmployee)
         return {
-          data: { message: "Employee Not Found", error: "On Update Error" },
-          status_code: HttpStatus.BAD_REQUEST,
+          data: { message: "Employee Not Found" },
+          status_code: HttpStatus.OK,
+          success: false,
         };
       else {
         let allRoles = await roles.find({});
@@ -312,9 +318,9 @@ class EmployeeService {
           return {
             data: {
               message: "You Are Not Authorized For Update Employee Details",
-              error: "On Update Error",
             },
-            status_code: HttpStatus.BAD_REQUEST,
+            success: false,
+            status_code: HttpStatus.UNAUTHORIZED,
           };
         else if (
           findRequestUserRolesDetails.some((e) =>
@@ -326,9 +332,9 @@ class EmployeeService {
           return {
             data: {
               message: "You Are Not Authorized For Update Employee Details",
-              error: "On Update Error",
             },
-            status_code: HttpStatus.BAD_REQUEST,
+            success: false,
+            status_code: HttpStatus.UNAUTHORIZED,
           };
         else {
           let modelToSave = <DocumentType<Employees>>model;
@@ -338,9 +344,9 @@ class EmployeeService {
               return {
                 data: {
                   message: "You Are Not Authorized For Update Employees Salary",
-                  error: "On Update Error",
                 },
-                status_code: HttpStatus.BAD_REQUEST,
+                success: false,
+                status_code: HttpStatus.UNAUTHORIZED,
               };
             else {
               modelToSave.salary = model.salary;
@@ -379,8 +385,8 @@ class EmployeeService {
                   data: {
                     message:
                       "You Are Not Authorized For Assign SuperAdmin Role",
-                    error: "On Update Error",
                   },
+                  success: false,
                   status_code: HttpStatus.UNAUTHORIZED,
                 };
               else {
@@ -405,8 +411,8 @@ class EmployeeService {
                 return {
                   data: {
                     message: "You Are Not Authorized For Update Role",
-                    error: "On Update Error",
                   },
+                  success: false,
                   status_code: HttpStatus.UNAUTHORIZED,
                 };
               else {
@@ -472,8 +478,8 @@ class EmployeeService {
                 data: {
                   message:
                     "You Are Not Authorized For Update Employee Organization",
-                  error: "On Update Error",
                 },
+                success: false,
                 status_code: HttpStatus.UNAUTHORIZED,
               };
             else {
@@ -493,8 +499,8 @@ class EmployeeService {
                 data: {
                   message:
                     "You Are Not Authorized For Update Employee Date Of Joining Or department Or EmployeeId",
-                  error: "On Update Error",
                 },
+                success: false,
                 status_code: HttpStatus.UNAUTHORIZED,
               };
             else {
@@ -532,38 +538,29 @@ class EmployeeService {
             UpdateEmployeeAccountResult &&
             UpdateEmployeeAccountResult.modifiedCount > 0
           )
-            return { status_code: HttpStatus.OK, data: true };
+            return { status_code: HttpStatus.OK, data: true, success: true };
           else
             return {
-              status_code: HttpStatus.BAD_REQUEST,
+              status_code: HttpStatus.OK,
               data: {
                 message: "Unable To Update,No Changes Have Been Made",
-                Error: "On Update Error",
               },
+              success: false,
             };
-          //  else {
-          //   return {
-          //     data: {
-          //       message: "You Are Not Authorized For Update Employee Details",
-          //       error: "On Update Error",
-          //     },
-          //     status_code: HttpStatus.UNAUTHORIZED,
-          //   };
-          // }
         }
       }
     } catch (error) {
       console.log(error);
       return {
         status_code: HttpStatus.INTERNAL_SERVER_ERROR,
+        success: false,
         data: {
           message: "Internal Server Error",
-          Error: "On Update Error",
         },
       };
     }
   };
-  getEmployeeDetails = async (req: Request): Promise<IServiceResult> => {
+  getEmployeeDetails = async (req: Request): Promise<IServiceResult1> => {
     try {
       let userDetails = <DocumentType<Employees>>req.user;
       let findRequestUserRoles = await roles.find({
@@ -583,8 +580,42 @@ class EmployeeService {
         ) ||
         userDetails._id.toString() == req.params._id.toString()
       ) {
-        let employeeDetailResult = await employeeModel.findById(req.params._id);
+        let employeeDetailResult = await employeeModel
+          .findById(req.params._id, { password: 0 })
+          .populate([
+            { path: "organization_id", select: ["name", "email", "address"] },
+            { path: "designation", select: ["name"] },
+          ]);
+
+        let roleArray: any = [];
         if (employeeDetailResult) {
+          let allRoles = await roles.find({});
+
+          //find all managers
+          let allManagers = await employeeModel.find({
+            _id: { $in: employeeDetailResult.manager },
+          });
+          let allManagersNames: any = [];
+
+          allManagers.forEach((emp) => {
+            allManagersNames.push(emp.fullname);
+          });
+          //finding roles  values
+          employeeDetailResult.roles.forEach((obj) => {
+            allRoles.forEach((_role) => {
+              if (obj == _role._id.toString()) roleArray.push(_role.name);
+            });
+          });
+          employeeDetailResult!.roles = roleArray;
+          employeeDetailResult!.manager = allManagersNames;
+          //
+          let profile = <DocumentType<Profile>>employeeDetailResult.designation;
+          let org = <DocumentType<Organization>>(
+            employeeDetailResult.organization_id
+          );
+
+          employeeDetailResult.organization_id = undefined;
+
           if (
             findRequestUserRolesDetails.some((e) =>
               [EnumRoles.SUPERADMIN, EnumRoles.HR.valueOf()].includes(e)
@@ -597,37 +628,53 @@ class EmployeeService {
               return {
                 data: {
                   message: "You Are Not Authorized For Getting Employee Detail",
-                  error: "On Fetch error",
                 },
+                success: false,
                 status_code: HttpStatus.UNAUTHORIZED,
               };
             } else
-              return { status_code: HttpStatus.OK, data: employeeDetailResult };
+              return {
+                status_code: HttpStatus.OK,
+                success: true,
+                data: {
+                  ...employeeDetailResult.toObject(),
+                  designation: profile && profile.name ? profile.name : "",
+                  organization_name: org && org.name ? org.name : "",
+                },
+              };
           } else
-            return { status_code: HttpStatus.OK, data: employeeDetailResult };
+            return {
+              status_code: HttpStatus.OK,
+              success: true,
+              data: {
+                ...employeeDetailResult.toObject(),
+                designation: profile && profile.name ? profile.name : "",
+                organization_name: org && org.name ? org.name : "",
+              },
+            };
         } else
           return {
-            status_code: HttpStatus.BAD_REQUEST,
+            status_code: HttpStatus.OK,
+            success: false,
             data: {
               message: "Employee Detail Not Found",
-              Error: "On Fetch Error",
             },
           };
       } else
         return {
           data: {
             message: "You Are Not Authorized For Getting Employee Detail",
-            error: "On Fetch Error",
           },
           status_code: HttpStatus.UNAUTHORIZED,
+          success: false,
         };
     } catch (error) {
       console.log(error);
       return {
         status_code: HttpStatus.INTERNAL_SERVER_ERROR,
+        success: false,
         data: {
           message: "Internal Server Error",
-          Error: "On Fetch Error",
         },
       };
     }
@@ -636,15 +683,58 @@ class EmployeeService {
     try {
       let userDetails = <DocumentType<Employees>>req.user;
 
-      let employeeDetailResult = await employeeModel.findById(userDetails._id, {
-        password: 0,
-      });
-      if (employeeDetailResult)
+      //
+
+      let employeeDetailResult = await employeeModel
+        .findById(userDetails._id, {
+          password: 0,
+        })
+        .populate([
+          { path: "organization_id", select: { name: 1, _id: 0 } },
+          { path: "designation", select: { name: 1, _id: 0 } },
+        ]);
+
+      let roleArray: any = [];
+      if (employeeDetailResult) {
+        let allRoles = await roles.find({});
+
+        //find all managers
+        let allManagers = await employeeModel.find({
+          _id: { $in: employeeDetailResult.manager },
+        });
+        let allManagersNames: any = [];
+
+        allManagers.forEach((emp) => {
+          allManagersNames.push(emp.fullname);
+        });
+        //finding roles  values
+        employeeDetailResult.roles.forEach((obj) => {
+          allRoles.forEach((_role) => {
+            if (obj == _role._id.toString()) roleArray.push(_role.name);
+          });
+        });
+        employeeDetailResult!.roles = roleArray;
+        employeeDetailResult!.manager = allManagersNames;
+      }
+
+      //
+      if (employeeDetailResult) {
+        let profile = <DocumentType<Profile>>employeeDetailResult.designation;
+        let org = <DocumentType<Organization>>(
+          employeeDetailResult.organization_id
+        );
+
+        employeeDetailResult.organization_id = undefined;
+
         return {
-          data: employeeDetailResult,
+          data: {
+            ...employeeDetailResult.toObject(),
+            designation: profile && profile.name ? profile.name : "",
+            organization_name: org && org.name ? org.name : "",
+          },
           status_code: HttpStatus.OK,
         };
-      else
+      } else
         return {
           status_code: HttpStatus.BAD_REQUEST,
           data: {
@@ -1103,7 +1193,7 @@ class EmployeeService {
     }
   };
 
-  allEmployeeDetails = async (req: Request): Promise<IServiceResult> => {
+  allEmployeeDetails = async (req: Request): Promise<IServiceResult1> => {
     try {
       let userDetails = <DocumentType<Employees>>req.user;
       let allroles = await roles.find({});
@@ -1195,89 +1285,107 @@ class EmployeeService {
             _id: new mongoose.Types.ObjectId(userDetails._id.toString()),
           });
       }
-      //assign organization name and designation name in received result
 
-      let finalResult: any = [];
+      /************** */
+      // //assign organization name and designation name in received result
+
+      // let finalResult: any = [];
+      // if (foundEmployeeList && foundEmployeeList.length > 0) {
+      //   //changes manager array string to objectIds array
+      //   let tempResult: any = [];
+      //   foundEmployeeList.forEach((_employee: any) => {
+      //     let managerArray: any = [];
+      //     _employee.manager.forEach((obj: any) => {
+      //       let newObj = new mongoose.Types.ObjectId(obj);
+      //       managerArray.push(newObj);
+      //     });
+      //     _employee.manager = managerArray;
+      //     tempResult.push(_employee);
+
+      //     //changes role array string to objectIds array
+
+      //     let rolesArray: any = [];
+      //     _employee.roles.forEach((obj: any) => {
+      //       let newObj = new mongoose.Types.ObjectId(obj);
+      //       rolesArray.push(newObj);
+      //     });
+      //     _employee.roles = rolesArray;
+      //     tempResult.push(_employee);
+      //   });
+
+      //   finalResult = await employeeModel
+      //     .find(
+      //       { _id: { $in: tempResult } },
+      //       {
+      //         _id: 1,
+      //         fullname: 1,
+      //         manager: 1,
+      //         email: 1,
+      //         roles: 1,
+      //         organization_id: 1,
+      //         designation: 1,
+      //       }
+      //     )
+      //     .populate([
+      //       { path: "manager", select: { fullname: 1, _id: 0 } },
+      //       { path: "organization_id", select: { name: 1 } },
+      //       { path: "designation", select: { name: 1 } },
+      //       { path: "roles", select: { name: 1, _id: 0 } },
+      //     ]);
+      // }
+      // let resultaArray: any = [];
+      // let role_Array: any = [];
+      // let manager_Array: any = [];
+
+      // finalResult.forEach((obj: any) => {
+      //   //role details
+      //   role_Array = obj.roles.map((x: any) => {
+      //     return x.name;
+      //   });
+
+      //   obj.roles = undefined;
+      //   //manager details
+
+      //   manager_Array = obj.manager.map((x: any) => {
+      //     return x.fullname;
+      //   });
+      //   obj.manager = undefined;
+      //   resultaArray.push({
+      //     ...obj.toObject(),
+      //     roles: role_Array,
+      //     manager: manager_Array,
+      //   });
+      // });
+      // console.log(resultaArray.length);
+
+      /**************************** */
+
       if (foundEmployeeList && foundEmployeeList.length > 0) {
-        //changes manager array string to objectIds array
-        let tempResult: any = [];
-        foundEmployeeList.forEach((_employee: any) => {
-          let managerArray: any = [];
-          _employee.manager.forEach((obj: any) => {
-            let newObj = new mongoose.Types.ObjectId(obj);
-            managerArray.push(newObj);
-          });
-          _employee.manager = managerArray;
-          tempResult.push(_employee);
-
-          //changes role array string to objectIds array
-
-          let rolesArray: any = [];
-          _employee.roles.forEach((obj: any) => {
-            let newObj = new mongoose.Types.ObjectId(obj);
-            rolesArray.push(newObj);
-          });
-          _employee.roles = rolesArray;
-          tempResult.push(_employee);
+        let result: any = [];
+        foundEmployeeList.forEach((emp) => {
+          if(emp._id.toString()!=userDetails._id.toString())
+          {let emp_obj = {
+            _id: emp._id,
+            name: emp.fullname,
+            email: emp.email,
+            department: emp.department,
+          };
+          result.push(emp_obj)}
         });
-
-        finalResult = await employeeModel
-          .find(
-            { _id: { $in: tempResult } },
-            {
-              _id: 1,
-              fullname: 1,
-              manager: 1,
-              email: 1,
-              roles: 1,
-              organization_id: 1,
-              designation: 1,
-            }
-          )
-          .populate([
-            { path: "manager", select: { fullname: 1, _id: 0 } },
-            { path: "organization_id", select: { name: 1 } },
-            { path: "designation", select: { name: 1 } },
-            { path: "roles", select: { name: 1, _id: 0 } },
-          ]);
-      }
-      let resultaArray: any = [];
-      let role_Array: any = [];
-      let manager_Array: any = [];
-
-      finalResult.forEach((obj: any) => {
-        //role details
-        role_Array = obj.roles.map((x: any) => {
-          return x.name;
-        });
-
-        obj.roles = undefined;
-        //manager details
-
-        manager_Array = obj.manager.map((x: any) => {
-          return x.fullname;
-        });
-        obj.manager = undefined;
-        resultaArray.push({
-          ...obj.toObject(),
-          roles: role_Array,
-          manager: manager_Array,
-        });
-      });
-      console.log(resultaArray.length);
-
-      if (foundEmployeeList)
         return {
           status_code: HttpStatus.OK,
-          data: resultaArray,
+          data: result, //resultaArray,
+          success: true,
         };
-      else
+      } else
         return {
-          data: {
-            message: "Employees List Not Found",
-            error: "On Fetch Error",
-          },
-          status_code: HttpStatus.BAD_REQUEST,
+          data: [],
+          //  {
+          //   message: "Employees List Not Found",
+          //   error: "On Fetch Error",
+          // },
+          success: false,
+          status_code: HttpStatus.OK,
         };
     } catch (error) {
       console.log(error);
@@ -1287,6 +1395,7 @@ class EmployeeService {
           message: "Internal Server Error",
           Error: "On Fetch Error",
         },
+        success: false,
       };
     }
   };
@@ -1405,7 +1514,7 @@ class EmployeeService {
     }
   };
 
-  //all role list
+  //all role list---according to login
   allRoleList = async (req: Request): Promise<IServiceResult> => {
     try {
       let userDetails = <DocumentType<Employees>>req.user;
@@ -2653,9 +2762,8 @@ class EmployeeService {
       //watermark add
 
       let imagePath = await this.imageOpacity(image_path);
-      console.log(imagePath.data
-        );
-      
+      console.log(imagePath.data);
+
       await doc.image(
         image_path,
         //imagePath.data,
@@ -2847,8 +2955,15 @@ class EmployeeService {
       doc.stroke().moveDown(0.2);
 
       doc.end();
+      let result = `<a href=${writeStream.path}>Link</a>`;
+
+      let intial = result.indexOf("=") + 1;
+      let end = result.indexOf(">");
+
+      let finalResult = result.slice(intial, end);
+
       return {
-        data: writeStream.path,
+        data: finalResult, //writeStream.path,
         status_code: HttpStatus.OK,
       };
     } catch (error) {
